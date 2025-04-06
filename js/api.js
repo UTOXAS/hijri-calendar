@@ -1,6 +1,6 @@
 // Fetch today's Hijri date from Dar Al-Ifta via Google Apps Script proxy
 async function fetchHijriDateToday() {
-    const proxyUrl = 'https://script.google.com/macros/s/AKfycbzr2edGlgNP-EJ13HBUs2-qHS19VPey4EFgwjzulNMVEo7hQAy92xO7eGd7Pm3psCCs/exec'; // Replace with your deployed URL
+    const proxyUrl = 'https://script.google.com/macros/s/AKfycbwQ9Q1WvIEQU_m4HFhAMrW0p3-FeukqDRlWqIR8Ewbeg_lEN52euJwoAXp3wIewGtkC/exec'; // Replace with your deployed URL
     try {
         const response = await fetch(proxyUrl);
         if (!response.ok) throw new Error(`فشل في جلب بيانات دار الإفتاء: ${response.status}`);
@@ -8,10 +8,19 @@ async function fetchHijriDateToday() {
         if (data.error) throw new Error(data.error);
         console.log('Dar Al-Ifta Response:', data);
 
+        // Decode potentially garbled strings
+        const decodeString = (str) => {
+            try {
+                return decodeURIComponent(escape(str));
+            } catch (e) {
+                return str; // Return original if decoding fails
+            }
+        };
+
         return {
-            hijriDay: data.day,
-            hijriMonthName: data.month,
-            hijriYear: data.year,
+            hijriDay: data.day !== null && !isNaN(data.day) ? data.day : 1, // Fallback to 1 if null or invalid
+            hijriMonthName: decodeString(data.month),
+            hijriYear: decodeString(data.year),
             gregorianDate: new Date(data.gregorianDate)
         };
     } catch (error) {

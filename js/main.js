@@ -13,9 +13,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentHijriYear = currentData.hijriYear;
         } catch (error) {
             console.error('فشل في تهيئة الشهر الحالي:', error);
+            // Use a fallback date if API fails
             currentHijriMonth = 'شَوّال';
             currentHijriYear = '1446';
-            errorAlert.textContent = 'تعذر جلب التاريخ الحالي. يتم استخدام تاريخ افتراضي.';
+            errorAlert.textContent = 'تعذر جلب التاريخ الحالي من دار الإفتاء. يتم استخدام تاريخ افتراضي.';
             errorAlert.classList.remove('d-none');
         }
     }
