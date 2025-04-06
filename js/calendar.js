@@ -19,7 +19,7 @@ function generateCalendar(hijriData, gregorianDate) {
     document.getElementById('month-year').textContent = `${hijriMonth} ${hijriYear} هـ - ${gregorianHeader}`;
 
     const daysInMonth = hijriData.DaysInMonth;
-    const firstDayWeekday = (gregorianStart.getDay() + 1) % 7; // Saturday = 0
+    const firstDayWeekday = (gregorianStart.getDay() + 1) % 7; // Adjust for RTL: 0 = Saturday
 
     let dayCounter = 1;
     const weeks = Math.ceil((daysInMonth + firstDayWeekday) / 7);
@@ -27,7 +27,7 @@ function generateCalendar(hijriData, gregorianDate) {
 
     for (let i = 0; i < weeks; i++) {
         const row = document.createElement('tr');
-        const rowData = [];
+        const rowData = new Array(7).fill('');
         for (let j = 0; j < 7; j++) {
             const cell = document.createElement('td');
             const position = i * 7 + j;
@@ -43,10 +43,8 @@ function generateCalendar(hijriData, gregorianDate) {
                 if (gregDay.toDateString() === today.toDateString()) {
                     cell.classList.add('current-day');
                 }
-                rowData.push(cell.textContent);
+                rowData[6 - j] = cell.textContent; // Reverse order for RTL
                 dayCounter++;
-            } else {
-                rowData.push('');
             }
             row.appendChild(cell);
         }
@@ -91,7 +89,7 @@ function nextMonth(hijriMonth, hijriYear) {
 
 // Generate CSV format
 function generateCSV(calendarData, hijriData, gregorianDate) {
-    const headers = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
+    const headers = ['الجمعة', 'الخميس', 'الأربعاء', 'الثلاثاء', 'الإثنين', 'الأحد', 'السبت'];
     let csv = headers.map(h => `"${h}"`).join(',') + '\n';
     calendarData.forEach(row => {
         csv += row.map(cell => `"${cell}"`).join(',') + '\n';
@@ -99,9 +97,9 @@ function generateCSV(calendarData, hijriData, gregorianDate) {
     return csv;
 }
 
-// Generate formatted text matching the expected format
+// Generate formatted text matching the required format
 function generateFormattedText(calendarData, hijriData, gregorianDate) {
-    const headers = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
+    const headers = ['الجمعة', 'الخميس', 'الأربعاء', 'الثلاثاء', 'الإثنين', 'الأحد', 'السبت'];
     const hijriMonth = hijriData.HijriMonthName;
     const hijriYear = hijriData.HijriYear;
     const gregorianStart = new Date(hijriData.GregorianStart);

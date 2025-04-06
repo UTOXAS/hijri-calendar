@@ -1,9 +1,24 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const loading = document.getElementById('loading');
     const errorAlert = document.getElementById('error-alert');
-    let currentHijriMonth = 'شَوّال'; // Default to Shawwal
-    let currentHijriYear = '1446';   // Default to 1446 H
+    let currentHijriMonth;
+    let currentHijriYear;
     let currentCalendarData = [];
+
+    // Initialize with current Hijri month and year
+    async function initializeCurrentMonth() {
+        try {
+            const currentData = await fetchHijriDateToday();
+            currentHijriMonth = currentData.hijriMonthName;
+            currentHijriYear = currentData.hijriYear;
+        } catch (error) {
+            console.error('فشل في تهيئة الشهر الحالي:', error);
+            currentHijriMonth = 'شَوّال';
+            currentHijriYear = '1446';
+            errorAlert.textContent = 'تعذر جلب التاريخ الحالي. يتم استخدام تاريخ افتراضي.';
+            errorAlert.classList.remove('d-none');
+        }
+    }
 
     async function loadCalendar() {
         loading.style.display = 'block';
@@ -20,6 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    await initializeCurrentMonth();
     await loadCalendar();
 
     document.getElementById('prev-month').addEventListener('click', async () => {

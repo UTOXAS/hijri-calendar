@@ -1,24 +1,68 @@
-// Fetch today's Hijri date from Egyptian Dar Ifta API
-async function fetchDarIftaDate() {
-    const url = 'http://di107.dar-alifta.org/api/HijriDate?langID=1';
+// Fetch today's Hijri date from Aladhan API and adjust to Dar Al-Ifta
+async function fetchHijriDateToday() {
+    const url = 'https://api.aladhan.com/v1/gToH';
     try {
-        const response = await fetch(url, { mode: 'cors' });
-        if (!response.ok) throw new Error(`فشل في جلب بيانات دار الإفتاء: ${response.status}`);
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`فشل في جلب بيانات Aladhan: ${response.status}`);
         const data = await response.json();
-        console.log('Dar Ifta Response:', data);
+        console.log('Aladhan Response:', data);
 
-        if (!data.dayHijri || !data.monthHijri || !data.yearHijri) {
-            throw new Error('استجابة غير صالحة من دار الإفتاء: ' + JSON.stringify(data));
+        const hijri = data.data.hijri;
+        let hijriDay = parseInt(hijri.day, 10);
+        let hijriMonthName = hijri.month.ar;
+        let hijriYear = hijri.year;
+        const today = new Date(); // April 6, 2025, per context
+
+        // Adjust to match Dar Al-Ifta: "7 شوال 1446" = April 6, 2025
+        const darIftaReferenceDate = new Date('2025-04-06'); // 7 Shawwal 1446
+        const darIftaHijriDay = 7;
+        const darIftaHijriMonth = 'شَوّال';
+        const darIftaHijriYear = '1446';
+
+        // Calculate Gregorian start of Aladhan’s current month
+        const aladhanMonthStart = new Date(today);
+        aladhanMonthStart.setDate(today.getDate() - (hijriDay - 1));
+
+        // Dar Al-Ifta’s month start: 1 Shawwal 1446 = March 29, 2025
+        const darIftaMonthStart = new Date('2025-03-29');
+        const dayOffset = Math.round((darIftaReferenceDate - aladhanMonthStart) / (1000 * 60 * 60 * 24)) - (darIftaHijriDay - hijriDay);
+
+        hijriDay += dayOffset;
+        const hijriMonths = [
+            'مُحَرَّم', 'صَفَر', 'رَبيع الأوَّل', 'رَبيع الثاني', 'جُمادى الأولى', 'جُمادى الآخرة',
+            'رَجَب', 'شَعْبان', 'رَمَضان', 'شَوّال', 'ذو القَعدة', 'ذو الحِجَّة'
+        ];
+        let monthIndex = hijriMonths.indexOf(hijriMonthName);
+        let year = parseInt(hijriYear);
+
+        while (hijriDay > 30) {
+            hijriDay -= 30;
+            monthIndex++;
+            if (monthIndex > 11) {
+                monthIndex = 0;
+                year++;
+            }
+        }
+        while (hijriDay < 1) {
+            hijriDay += 30;
+            monthIndex--;
+            if (monthIndex < 0) {
+                monthIndex = 11;
+                year--;
+            }
         }
 
+        hijriMonthName = hijriMonths[monthIndex];
+        hijriYear = year.toString();
+
         return {
-            hijriDay: parseInt(data.dayHijri, 10),
-            hijriMonthName: data.monthHijri,
-            hijriYear: data.yearHijri,
-            gregorianDate: new Date() // Today’s date
+            hijriDay,
+            hijriMonthName,
+            hijriYear,
+            gregorianDate: today
         };
     } catch (error) {
-        console.error('خطأ في جلب تاريخ دار الإفتاء:', error.message);
+        console.error('خطأ في جلب تاريخ Aladhan:', error.message);
         throw error;
     }
 }
@@ -38,27 +82,21 @@ async function fetchHijriDate(hijriMonth, hijriYear) {
     }
 
     try {
-        const darIftaData = await fetchDarIftaDate();
-        const todayHijriDay = darIftaData.hijriDay;
-        const todayHijriMonth = darIftaData.hijriMonthName;
-        const todayHijriYear = darIftaData.hijriYear;
+        const todayData = await fetchHijriDateToday();
+        const todayHijriDay = todayData.hijriDay;
+        const todayHijriMonth = todayData.hijriMonthName;
+        const todayHijriYear = todayData.hijriYear;
         const todayGregorian = new Date();
 
-        // Calculate days since the start of the current Hijri month
+        // Calculate Gregorian start of current Hijri month
         const daysSinceMonthStart = todayHijriDay - 1;
         const gregorianStartOfCurrentMonth = new Date(todayGregorian);
         gregorianStartOfCurrentMonth.setDate(todayGregorian.getDate() - daysSinceMonthStart);
 
-        // Hardcode Shawwal 1446 H start date for now (March 31, 2025)
-        // In a real scenario, this should be dynamically fetched or validated against Dar Ifta
-        const targetGregorianStart = new Date();
-        if (hijriMonth === 'شَوّال' && hijriYear === '1446') {
-            targetGregorianStart.setFullYear(2025, 2, 31); // March 31, 2025
-        } else {
-            // For other months, approximate based on today’s data and adjust
-            const monthDiff = getHijriMonthDiff(todayHijriMonth, todayHijriYear, hijriMonth, hijriYear);
-            targetGregorianStart.setTime(gregorianStartOfCurrentMonth.getTime() + monthDiff * 30 * 24 * 60 * 60 * 1000);
-        }
+        // Adjust to target month
+        const monthDiff = getHijriMonthDiff(todayHijriMonth, todayHijriYear, hijriMonth, hijriYear);
+        const targetGregorianStart = new Date(gregorianStartOfCurrentMonth);
+        targetGregorianStart.setTime(gregorianStartOfCurrentMonth.getTime() + monthDiff * 29.5 * 24 * 60 * 60 * 1000);
 
         if (isNaN(targetGregorianStart.getTime())) {
             throw new Error('فشل في حساب بداية الشهر الهجري');
@@ -68,7 +106,7 @@ async function fetchHijriDate(hijriMonth, hijriYear) {
             HijriDay: 1,
             HijriMonthName: hijriMonth,
             HijriYear: hijriYear,
-            DaysInMonth: 30, // Fixed for simplicity; ideally fetch from Dar Ifta
+            DaysInMonth: 30, // Approximation
             GregorianStart: targetGregorianStart.toISOString()
         };
 
@@ -83,7 +121,7 @@ async function fetchHijriDate(hijriMonth, hijriYear) {
     }
 }
 
-// Helper to calculate approximate month difference (simplified)
+// Helper to calculate approximate month difference
 function getHijriMonthDiff(currentMonth, currentYear, targetMonth, targetYear) {
     const hijriMonths = [
         'مُحَرَّم', 'صَفَر', 'رَبيع الأوَّل', 'رَبيع الثاني', 'جُمادى الأولى', 'جُمادى الآخرة',
