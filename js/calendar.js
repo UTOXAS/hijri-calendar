@@ -19,7 +19,7 @@ function generateCalendar(hijriData, gregorianDate) {
     document.getElementById('month-year').textContent = `${hijriMonth} ${hijriYear} هـ - ${gregorianHeader}`;
 
     const daysInMonth = hijriData.DaysInMonth;
-    const firstDayWeekday = (gregorianStart.getDay() + 1) % 7; // Adjust for RTL: 0 = Saturday
+    const firstDayWeekday = gregorianStart.getDay(); // 0 = Sunday, 6 = Saturday
 
     let dayCounter = 1;
     const weeks = Math.ceil((daysInMonth + firstDayWeekday) / 7);
@@ -35,7 +35,9 @@ function generateCalendar(hijriData, gregorianDate) {
                 const gregDay = new Date(gregorianStart);
                 gregDay.setDate(gregorianStart.getDate() + (dayCounter - 1));
                 const gregMonth = gregDay.toLocaleString('ar', { month: 'long' });
-                const gregText = gregDay.getDate() + (gregDay.getMonth() !== gregorianStart.getMonth() ? ` ${gregMonth}` : '');
+                const isFirstOfGregMonth = gregDay.getDate() === 1;
+                const isLastOfGregMonth = gregDay.getDate() === new Date(gregDay.getFullYear(), gregDay.getMonth() + 1, 0).getDate();
+                const gregText = `${gregDay.getDate()}${(isFirstOfGregMonth || isLastOfGregMonth) ? ` ${gregMonth}` : ''}`;
                 cell.textContent = `${dayCounter} (${gregText})`;
                 cell.title = `${formatHijriDate(dayCounter, hijriMonth, hijriYear)} - ${formatGregorianDate(gregDay.getDate(), gregMonth, gregorianYear)}`;
 
@@ -43,7 +45,7 @@ function generateCalendar(hijriData, gregorianDate) {
                 if (gregDay.toDateString() === today.toDateString()) {
                     cell.classList.add('current-day');
                 }
-                rowData[6 - j] = cell.textContent; // Reverse order for RTL
+                rowData[j] = cell.textContent;
                 dayCounter++;
             }
             row.appendChild(cell);
@@ -89,7 +91,7 @@ function nextMonth(hijriMonth, hijriYear) {
 
 // Generate CSV format
 function generateCSV(calendarData, hijriData, gregorianDate) {
-    const headers = ['الجمعة', 'الخميس', 'الأربعاء', 'الثلاثاء', 'الإثنين', 'الأحد', 'السبت'];
+    const headers = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
     let csv = headers.map(h => `"${h}"`).join(',') + '\n';
     calendarData.forEach(row => {
         csv += row.map(cell => `"${cell}"`).join(',') + '\n';
@@ -99,7 +101,7 @@ function generateCSV(calendarData, hijriData, gregorianDate) {
 
 // Generate formatted text matching the required format
 function generateFormattedText(calendarData, hijriData, gregorianDate) {
-    const headers = ['الجمعة', 'الخميس', 'الأربعاء', 'الثلاثاء', 'الإثنين', 'الأحد', 'السبت'];
+    const headers = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
     const hijriMonth = hijriData.HijriMonthName;
     const hijriYear = hijriData.HijriYear;
     const gregorianStart = new Date(hijriData.GregorianStart);

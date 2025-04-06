@@ -1,68 +1,21 @@
-// Fetch today's Hijri date from Aladhan API and adjust to Dar Al-Ifta
+// Fetch today's Hijri date from Dar Al-Ifta via Google Apps Script proxy
 async function fetchHijriDateToday() {
-    const url = 'https://api.aladhan.com/v1/gToH';
+    const proxyUrl = 'https://script.google.com/macros/s/AKfycbzr2edGlgNP-EJ13HBUs2-qHS19VPey4EFgwjzulNMVEo7hQAy92xO7eGd7Pm3psCCs/exec'; // Replace with your deployed URL
     try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`فشل في جلب بيانات Aladhan: ${response.status}`);
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error(`فشل في جلب بيانات دار الإفتاء: ${response.status}`);
         const data = await response.json();
-        console.log('Aladhan Response:', data);
-
-        const hijri = data.data.hijri;
-        let hijriDay = parseInt(hijri.day, 10);
-        let hijriMonthName = hijri.month.ar;
-        let hijriYear = hijri.year;
-        const today = new Date(); // April 6, 2025, per context
-
-        // Adjust to match Dar Al-Ifta: "7 شوال 1446" = April 6, 2025
-        const darIftaReferenceDate = new Date('2025-04-06'); // 7 Shawwal 1446
-        const darIftaHijriDay = 7;
-        const darIftaHijriMonth = 'شَوّال';
-        const darIftaHijriYear = '1446';
-
-        // Calculate Gregorian start of Aladhan’s current month
-        const aladhanMonthStart = new Date(today);
-        aladhanMonthStart.setDate(today.getDate() - (hijriDay - 1));
-
-        // Dar Al-Ifta’s month start: 1 Shawwal 1446 = March 29, 2025
-        const darIftaMonthStart = new Date('2025-03-29');
-        const dayOffset = Math.round((darIftaReferenceDate - aladhanMonthStart) / (1000 * 60 * 60 * 24)) - (darIftaHijriDay - hijriDay);
-
-        hijriDay += dayOffset;
-        const hijriMonths = [
-            'مُحَرَّم', 'صَفَر', 'رَبيع الأوَّل', 'رَبيع الثاني', 'جُمادى الأولى', 'جُمادى الآخرة',
-            'رَجَب', 'شَعْبان', 'رَمَضان', 'شَوّال', 'ذو القَعدة', 'ذو الحِجَّة'
-        ];
-        let monthIndex = hijriMonths.indexOf(hijriMonthName);
-        let year = parseInt(hijriYear);
-
-        while (hijriDay > 30) {
-            hijriDay -= 30;
-            monthIndex++;
-            if (monthIndex > 11) {
-                monthIndex = 0;
-                year++;
-            }
-        }
-        while (hijriDay < 1) {
-            hijriDay += 30;
-            monthIndex--;
-            if (monthIndex < 0) {
-                monthIndex = 11;
-                year--;
-            }
-        }
-
-        hijriMonthName = hijriMonths[monthIndex];
-        hijriYear = year.toString();
+        if (data.error) throw new Error(data.error);
+        console.log('Dar Al-Ifta Response:', data);
 
         return {
-            hijriDay,
-            hijriMonthName,
-            hijriYear,
-            gregorianDate: today
+            hijriDay: data.day,
+            hijriMonthName: data.month,
+            hijriYear: data.year,
+            gregorianDate: new Date(data.gregorianDate)
         };
     } catch (error) {
-        console.error('خطأ في جلب تاريخ Aladhan:', error.message);
+        console.error('خطأ في جلب تاريخ دار الإفتاء:', error.message);
         throw error;
     }
 }
@@ -86,7 +39,12 @@ async function fetchHijriDate(hijriMonth, hijriYear) {
         const todayHijriDay = todayData.hijriDay;
         const todayHijriMonth = todayData.hijriMonthName;
         const todayHijriYear = todayData.hijriYear;
-        const todayGregorian = new Date();
+        const todayGregorian = todayData.gregorianDate;
+
+        // Validate input data
+        if (!todayHijriDay || !todayHijriMonth || !todayHijriYear || !todayGregorian) {
+            throw new Error('بيانات اليوم الحالي غير صالحة');
+        }
 
         // Calculate Gregorian start of current Hijri month
         const daysSinceMonthStart = todayHijriDay - 1;
@@ -106,7 +64,7 @@ async function fetchHijriDate(hijriMonth, hijriYear) {
             HijriDay: 1,
             HijriMonthName: hijriMonth,
             HijriYear: hijriYear,
-            DaysInMonth: 30, // Approximation
+            DaysInMonth: 30, // Approximation, as Dar Al-Ifta provides no month length
             GregorianStart: targetGregorianStart.toISOString()
         };
 
@@ -129,6 +87,9 @@ function getHijriMonthDiff(currentMonth, currentYear, targetMonth, targetYear) {
     ];
     const currentIndex = hijriMonths.indexOf(currentMonth);
     const targetIndex = hijriMonths.indexOf(targetMonth);
+    if (currentIndex === -1 || targetIndex === -1) {
+        throw new Error('اسم الشهر غير صالح');
+    }
     const yearDiff = parseInt(targetYear) - parseInt(currentYear);
     return (yearDiff * 12) + (targetIndex - currentIndex);
 }
