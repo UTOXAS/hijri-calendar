@@ -1,6 +1,6 @@
 // Fetch today's Hijri date from Dar Al-Ifta via Google Apps Script proxy
 async function fetchHijriDateToday() {
-    const proxyUrl = 'AKfycbxuqJkRj9BOGHh2Cc0Sm4JqQXNcqZXmUTTPmi_xr91_8d2m6f_7JEBDfptUdOGINefa'; // Replace with your deployed URL
+    const proxyUrl = 'https://script.google.com/macros/s/AKfycbxuqJkRj9BOGHh2Cc0Sm4JqQXNcqZXmUTTPmi_xr91_8d2m6f_7JEBDfptUdOGINefa/exec'; // Replace with your deployed URL
     try {
         const response = await fetch(proxyUrl);
         if (!response.ok) throw new Error(`فشل في جلب بيانات دار الإفتاء: ${response.status}`);
@@ -19,18 +19,18 @@ async function fetchHijriDateToday() {
 
         // Map English month names to Arabic
         const monthNameMap = {
-            'Muharram': 'مُحَرَّم',
+            'Muharram': 'مُحَرَّم',
             'Safar': 'صَفَر',
-            'Rabi‘al-Awwal': 'رَبيع الأوَّل',
-            'Rabi‘ath-Thani': 'رَبيع الثاني',
-            'Jumada al-Ula': 'جُمادى الأولى',
-            'Jumada al-Akhirah': 'جُمادى الآخرة',
+            'Rabie’ al-Awwal': 'رَبيع الأوَّل',
+            'Rabie’ al-Thani': 'رَبيع الثاني',
+            'Jumada al-Awwal': 'جُمادى الأولى',
+            'Jumada al-Thani': 'جُمادى الآخرة',
             'Rajab': 'رَجَب',
-            'Sha‘ban': 'شَعْبان',
+            'Sa’ban': 'شَعْبان',
             'Ramadan': 'رَمَضان',
             'Shawwal': 'شَوّال',
-            'Dhu al-Qa‘dah': 'ذو القَعدة',
-            'Dhu al-Hijjah': 'ذو الحِجَّة'
+            'Dhul-Qi’da': 'ذو القَعدة',
+            'Dhul-Hijja': 'ذو الحِجَّة'
         };
 
         const monthName = decodeString(data.month);
