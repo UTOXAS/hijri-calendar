@@ -1,6 +1,6 @@
 // Fetch today's Hijri date from Dar Al-Ifta via Google Apps Script proxy
 async function fetchHijriDateToday() {
-    const proxyUrl = 'https://script.google.com/macros/s/AKfycbwQ9Q1WvIEQU_m4HFhAMrW0p3-FeukqDRlWqIR8Ewbeg_lEN52euJwoAXp3wIewGtkC/exec'; // Replace with your deployed URL
+    const proxyUrl = 'https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLitlcDmZcrKHfXu_XfTSTmy41d2fB-g8-AFQfbjoaDd0Q99MWKBVnpGcfsG4-bvNiwG7buLtYw9BnzNW5vEPjgrLAxsjHX9hrdkGm6fpmoYgBDVE4tl7tPaDbumUYvLcajnWY4iw2-VAFADnzonJFaW0KK3Wcd0A-qZBImpvMoyO0P948XScPeTlQ6Ubg2H_9Sl3LK1WlKu1krS1OCt7170LUgaMQ-y6EM0sYuSi2R28I02dgzqv7pwEuQOPAhNEHqj5jjQUQkCoOTn0s_18aI-vt24ng&lib=MCXVAbjLIrZqshkRZVm00N6_bX6_g3ydw'; // Replace with your deployed URL
     try {
         const response = await fetch(proxyUrl);
         if (!response.ok) throw new Error(`فشل في جلب بيانات دار الإفتاء: ${response.status}`);
