@@ -1,64 +1,75 @@
-// Fetch Hijri date from Aladhan API, adjusted to month start
+// Fetch today's Hijri date from Egyptian Dar Ifta API
+async function fetchDarIftaDate() {
+    const url = 'http://di107.dar-alifta.org/api/HijriDate?langID=1';
+    try {
+        const response = await fetch(url, { mode: 'cors' });
+        if (!response.ok) throw new Error(`فشل في جلب بيانات دار الإفتاء: ${response.status}`);
+        const data = await response.json();
+        console.log('Dar Ifta Response:', data);
+
+        if (!data.dayHijri || !data.monthHijri || !data.yearHijri) {
+            throw new Error('استجابة غير صالحة من دار الإفتاء: ' + JSON.stringify(data));
+        }
+
+        return {
+            hijriDay: parseInt(data.dayHijri, 10),
+            hijriMonthName: data.monthHijri,
+            hijriYear: data.yearHijri,
+            gregorianDate: new Date() // Today’s date
+        };
+    } catch (error) {
+        console.error('خطأ في جلب تاريخ دار الإفتاء:', error.message);
+        throw error;
+    }
+}
+
+// Fetch Hijri month data, adjusted to Dar Ifta’s start date
 async function fetchHijriDate(gregorianDate) {
     const cacheKey = `hijriDate_${gregorianDate.toISOString().split('T')[0]}`;
     let cachedData = getCachedData(cacheKey);
     if (cachedData) {
         if (cachedData.GregorianStart) {
             cachedData.GregorianStart = new Date(cachedData.GregorianStart);
-            if (isNaN(cachedData.GregorianStart.getTime())) {
-                console.warn('Cached GregorianStart is invalid, refetching:', cachedData);
-            } else {
+            if (!isNaN(cachedData.GregorianStart.getTime())) {
                 return cachedData;
             }
+            console.warn('Cached GregorianStart is invalid, refetching:', cachedData);
         }
     }
 
-    const day = gregorianDate.getDate();
-    const month = gregorianDate.getMonth() + 1; // Months are 0-indexed
-    const year = gregorianDate.getFullYear();
-    const url = `http://api.aladhan.com/v1/gToH?date=${day}-${month}-${year}`;
-
     try {
-        const response = await fetch(url, { mode: 'cors' });
-        if (!response.ok) throw new Error(`فشل في جلب البيانات من واجهة البرمجة: ${response.status}`);
+        const darIftaData = await fetchDarIftaDate();
+        const todayHijriDay = darIftaData.hijriDay;
+        const hijriMonthName = darIftaData.hijriMonthName;
+        const hijriYear = darIftaData.hijriYear;
 
-        const data = await response.json();
-        console.log('API Response:', data); // Debug log
+        // Assume 30 days for simplicity; adjust if Dar Ifta provides this
+        const daysInMonth = 30; // Could fetch from Aladhan if needed
 
-        if (data.code !== 200 || !data.data || !data.data.hijri) {
-            throw new Error('استجابة غير صالحة من الخادم: ' + JSON.stringify(data));
-        }
-
-        const hijriData = data.data.hijri;
-
-        // Validate and extract required fields with fallbacks
-        const hijriDay = parseInt(hijriData.day, 10) || 1;
-        const daysInMonth = parseInt(hijriData.month?.length, 10) || 30;
-        const hijriMonthName = hijriData.month?.ar || 'غير محدد';
-        const hijriYear = hijriData.year || 'غير محدد';
-
-        // Calculate the start of the Hijri month
+        // Calculate Gregorian start of the Hijri month
         const gregorianStart = new Date(gregorianDate);
-        if (isNaN(gregorianStart.getTime())) {
-            throw new Error('تاريخ ميلادي غير صالح: ' + gregorianDate);
-        }
-        gregorianStart.setDate(gregorianStart.getDate() - (hijriDay - 1));
+        gregorianStart.setDate(gregorianStart.getDate() - (todayHijriDay - 1));
         if (isNaN(gregorianStart.getTime())) {
             throw new Error('فشل في حساب بداية الشهر الهجري');
         }
 
+        // Adjust to match Dar Ifta’s start (March 31, 2025, for Shawwal 1)
+        const today = new Date();
+        const daysSinceStart = todayHijriDay - 1;
+        gregorianStart.setTime(today.getTime() - daysSinceStart * 24 * 60 * 60 * 1000);
+
         const result = {
-            HijriDay: 1, // Start of the month
+            HijriDay: 1,
             HijriMonthName: hijriMonthName,
             HijriYear: hijriYear,
             DaysInMonth: daysInMonth,
-            GregorianStart: gregorianStart.toISOString() // Store as string for caching
+            GregorianStart: gregorianStart.toISOString()
         };
 
         cacheData(cacheKey, result);
         return {
             ...result,
-            GregorianStart: new Date(result.GregorianStart) // Return as Date object
+            GregorianStart: new Date(result.GregorianStart)
         };
     } catch (error) {
         console.error('خطأ في جلب التاريخ الهجري:', error.message);

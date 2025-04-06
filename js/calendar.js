@@ -19,7 +19,7 @@ function generateCalendar(hijriData, gregorianDate) {
     document.getElementById('month-year').textContent = `${hijriMonth} ${hijriYear} هـ - ${gregorianHeader}`;
 
     const daysInMonth = hijriData.DaysInMonth;
-    const firstDayWeekday = (gregorianStart.getDay() + 1) % 7; // Adjust to match table (Saturday = 0)
+    const firstDayWeekday = (gregorianStart.getDay() + 1) % 7; // Saturday = 0
 
     let dayCounter = 1;
     const weeks = Math.ceil((daysInMonth + firstDayWeekday) / 7);
@@ -53,7 +53,7 @@ function generateCalendar(hijriData, gregorianDate) {
         calendarData.push(rowData);
     }
 
-    return calendarData; // For copy functionality
+    return calendarData;
 }
 
 // Navigate to previous month
@@ -78,7 +78,7 @@ function generateCSV(calendarData, hijriData, gregorianDate) {
     return csv;
 }
 
-// Generate formatted text
+// Generate formatted text matching the expected format
 function generateFormattedText(calendarData, hijriData, gregorianDate) {
     const headers = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
     const hijriMonth = hijriData.HijriMonthName;
@@ -94,7 +94,7 @@ function generateFormattedText(calendarData, hijriData, gregorianDate) {
         : `${gregorianStartMonth} - ${gregorianEndMonth} ${gregorianYear} م`;
 
     let text = `${hijriMonth} ${hijriYear} هـ\n${gregorianHeader}\n\n`;
-    text += headers.join('     | ') + '  \n';
+    text += headers.join('     | ') + '\n';
     text += headers.map(() => '----------').join('|') + '\n';
     calendarData.forEach(row => {
         text += row.map(cell => cell.padEnd(11)).join('| ') + '\n';

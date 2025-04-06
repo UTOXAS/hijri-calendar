@@ -10,16 +10,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             if (isNaN(currentDate.getTime())) {
                 console.error('currentDate غير صالح:', currentDate);
-                currentDate = new Date(); // Reset to today if invalid
+                currentDate = new Date();
             }
             const hijriData = await fetchHijriDate(currentDate);
             currentCalendarData = generateCalendar(hijriData, currentDate);
             const newGregorianStart = new Date(hijriData.GregorianStart);
             if (isNaN(newGregorianStart.getTime())) {
                 console.error('GregorianStart غير صالح:', hijriData.GregorianStart);
-                currentDate = new Date(); // Fallback to today
+                currentDate = new Date();
             } else {
-                currentDate = newGregorianStart; // Sync with Hijri month start
+                currentDate = newGregorianStart;
             }
         } catch (error) {
             console.error('فشل في تحميل التقويم:', error);
