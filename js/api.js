@@ -1,27 +1,16 @@
 // Fetch today's Hijri date from Dar Al-Ifta via Google Apps Script proxy
 async function fetchHijriDateToday() {
-    const proxyUrl = 'https://script.google.com/macros/s/AKfycbxuqJkRj9BOGHh2Cc0Sm4JqQXNcqZXmUTTPmi_xr91_8d2m6f_7JEBDfptUdOGINefa/exec'; // Replace with your deployed URL
+    const proxyUrl = 'https://script.google.com/macros/s/AKfycbxuqJkRj9BOGHh2Cc0Sm4JqQXNcqZXmUTTPmi_xr91_8d2m6f_7JEBDfptUdOGINefa/exec';
     try {
         const response = await fetch(proxyUrl);
         if (!response.ok) throw new Error(`فشل في جلب بيانات دار الإفتاء: ${response.status}`);
         const data = await response.json();
         if (data.error) throw new Error(data.error);
-        console.log('Dar Al-Ifta Response:', data);
 
-        // Decode potentially garbled strings
-        const decodeString = (str) => {
-            try {
-                return decodeURIComponent(escape(str));
-            } catch (e) {
-                return str; // Return original if decoding fails
-            }
-        };
-
-        // Map English month names to Arabic
         const monthNameMap = {
-            'Muharram': 'مُحَرَّم',
+            'Muharram': 'مُحَرَّم',
             'Safar': 'صَفَر',
-            'Rabie’ al-Awwal': 'رَبيع الأوَّل',
+            'Rabie’ al-Awwal': 'رَبيع الأوَّل',
             'Rabie’ al-Thani': 'رَبيع الثاني',
             'Jumada al-Awwal': 'جُمادى الأولى',
             'Jumada al-Thani': 'جُمادى الآخرة',
@@ -30,16 +19,16 @@ async function fetchHijriDateToday() {
             'Ramadan': 'رَمَضان',
             'Shawwal': 'شَوّال',
             'Dhul-Qi’da': 'ذو القَعدة',
-            'Dhul-Hijja': 'ذو الحِجَّة'
+            'Dhul-Hijja': 'ذو الحِجَّة'
         };
 
-        const monthName = decodeString(data.month);
+        const monthName = data.month;
         const arabicMonthName = monthNameMap[monthName] || monthName;
 
         return {
-            hijriDay: data.day !== null && !isNaN(data.day) ? data.day : 1,
+            hijriDay: parseInt(data.day),
             hijriMonthName: arabicMonthName,
-            hijriYear: decodeString(data.year),
+            hijriYear: data.year,
             gregorianDate: new Date(data.gregorianDate)
         };
     } catch (error) {
@@ -48,90 +37,73 @@ async function fetchHijriDateToday() {
     }
 }
 
-// Fetch Hijri month data for a specific Hijri month and year using Aladhan API
+// Fetch Hijri month data for a specific Hijri month and year
 async function fetchHijriDate(hijriMonth, hijriYear) {
     const cacheKey = `hijriDate_${hijriMonth}_${hijriYear}`;
     let cachedData = getCachedData(cacheKey);
-    if (cachedData) {
+    if (cachedData && !isNaN(new Date(cachedData.GregorianStart).getTime())) {
         cachedData.GregorianStart = new Date(cachedData.GregorianStart);
-        if (!isNaN(cachedData.GregorianStart.getTime())) {
-            return cachedData;
-        }
-        console.warn('Cached GregorianStart is invalid, refetching:', cachedData);
+        return cachedData;
     }
 
     try {
-        // Get today's data from Dar Al-Ifta
         const todayData = await fetchHijriDateToday();
-        const todayHijriDay = todayData.hijriDay;
-        const todayHijriMonth = todayData.hijriMonthName;
-        const todayHijriYear = todayData.hijriYear;
-        const todayGregorian = todayData.gregorianDate;
-
-        if (!todayHijriDay || !todayHijriMonth || !todayHijriYear || !todayGregorian) {
-            throw new Error('بيانات اليوم الحالي غير صالحة');
-        }
-
-        // Fetch Hijri calendar for the target year from Aladhan API
-        const aladhanUrl = `http://api.aladhan.com/v1/hijriCalendarByYear?year=${hijriYear}`;
-        const aladhanResponse = await fetch(aladhanUrl);
-        if (!aladhanResponse.ok) throw new Error(`فشل في جلب بيانات Aladhan: ${aladhanResponse.status}`);
-        const aladhanData = await aladhanResponse.json();
-        const months = aladhanData.data;
-
-        // Hijri months array for indexing
         const hijriMonths = [
             'مُحَرَّم', 'صَفَر', 'رَبيع الأوَّل', 'رَبيع الثاني', 'جُمادى الأولى', 'جُمادى الآخرة',
             'رَجَب', 'شَعْبان', 'رَمَضان', 'شَوّال', 'ذو القَعدة', 'ذو الحِجَّة'
         ];
-
-        const currentMonthIndex = hijriMonths.indexOf(todayHijriMonth);
         const targetMonthIndex = hijriMonths.indexOf(hijriMonth);
-        const yearDiff = parseInt(hijriYear) - parseInt(todayHijriYear);
+        if (targetMonthIndex === -1) throw new Error('اسم الشهر غير صالح');
 
-        if (currentMonthIndex === -1 || targetMonthIndex === -1) {
-            throw new Error('اسم الشهر غير صالح');
-        }
+        // Fetch Aladhan calendar for the year (for month length only)
+        const aladhanUrl = `http://api.aladhan.com/v1/hijriCalendarByYear?year=${hijriYear}`;
+        const response = await fetch(aladhanUrl);
+        if (!response.ok) throw new Error(`فشل في جلب بيانات Aladhan: ${response.status}`);
+        const aladhanData = await response.json();
+        const months = aladhanData.data;
 
-        // Calculate total days between today and target month start
-        let totalDaysOffset = -(todayHijriDay - 1); // Days back to start of current month
-        for (let y = 0; y < Math.abs(yearDiff); y++) {
-            const yearToFetch = parseInt(todayHijriYear) + (yearDiff > 0 ? y : -y - 1);
-            const yearData = await fetch(aladhanUrl.replace(hijriYear, yearToFetch)).then(res => res.json());
-            yearData.data.forEach(month => {
-                totalDaysOffset += yearDiff > 0 ? month.length : -month.length;
-            });
-        }
+        const monthData = months[targetMonthIndex];
+        const daysInMonth = monthData.length;
+        let gregorianStart;
 
-        if (yearDiff === 0) {
-            totalDaysOffset += (targetMonthIndex - currentMonthIndex) * 30; // Rough estimate within same year
+        // Get today’s exact Hijri and Gregorian from Dar Al-Ifta
+        const todayHijriDay = todayData.hijriDay;
+        const todayMonthIndex = hijriMonths.indexOf(todayData.hijriMonthName);
+        const todayYear = todayData.hijriYear;
+        const todayGregorian = new Date(todayData.gregorianDate);
+        todayGregorian.setHours(0, 0, 0, 0); // Normalize to start of day
+
+        if (hijriYear === todayYear && targetMonthIndex === todayMonthIndex) {
+            // For current month, calculate start from Dar Al-Ifta’s today
+            gregorianStart = new Date(todayGregorian);
+            gregorianStart.setDate(todayGregorian.getDate() - (todayHijriDay - 1));
         } else {
-            const targetYearMonths = months;
-            for (let i = 0; i < targetMonthIndex; i++) {
-                totalDaysOffset += targetYearMonths[i].length;
-            }
-            for (let i = 0; i < currentMonthIndex; i++) {
-                totalDaysOffset -= months[i].length;
+            // For other months, use Aladhan’s first day and adjust relative to Dar Al-Ifta
+            const firstDayData = monthData.days[0];
+            gregorianStart = new Date(`${firstDayData.gregorian.date} ${hijriYear}`);
+            if (hijriYear === todayYear) {
+                // Adjust based on Dar Al-Ifta’s current date
+                const monthDiff = targetMonthIndex - todayMonthIndex;
+                let dayOffset = -(todayHijriDay - 1); // Back to start of current month
+                for (let i = 0; i < Math.abs(monthDiff); i++) {
+                    const monthIndex = todayMonthIndex + (monthDiff > 0 ? i : -i - 1);
+                    dayOffset += monthDiff > 0 ? months[monthIndex].length : -months[monthIndex].length;
+                }
+                gregorianStart = new Date(todayGregorian);
+                gregorianStart.setDate(todayGregorian.getDate() + dayOffset);
             }
         }
 
-        // Calculate Gregorian start of target month
-        const targetGregorianStart = new Date(todayGregorian);
-        targetGregorianStart.setDate(todayGregorian.getDate() + totalDaysOffset);
-
-        if (isNaN(targetGregorianStart.getTime())) {
+        if (isNaN(gregorianStart.getTime())) {
             throw new Error('فشل في حساب بداية الشهر الهجري');
         }
-
-        // Get days in target month from Aladhan
-        const daysInMonth = months[targetMonthIndex].length;
 
         const result = {
             HijriDay: 1,
             HijriMonthName: hijriMonth,
             HijriYear: hijriYear,
             DaysInMonth: daysInMonth,
-            GregorianStart: targetGregorianStart.toISOString()
+            GregorianStart: gregorianStart.toISOString()
         };
 
         cacheData(cacheKey, result);

@@ -19,7 +19,7 @@ function generateCalendar(hijriData, gregorianDate) {
     document.getElementById('month-year').textContent = `${hijriMonth} ${hijriYear} هـ - ${gregorianHeader}`;
 
     const daysInMonth = hijriData.DaysInMonth;
-    const firstDayWeekday = gregorianStart.getDay(); // 0 = Sunday, 6 = Saturday
+    const firstDayWeekday = (gregorianStart.getDay() + 1) % 7; // 0 = السبت, 1 = الأحد, ..., 6 = الجمعة
 
     let dayCounter = 1;
     const weeks = Math.ceil((daysInMonth + firstDayWeekday) / 7);
@@ -99,7 +99,7 @@ function generateCSV(calendarData, hijriData, gregorianDate) {
     return csv;
 }
 
-// Generate formatted text matching the required format
+// Generate formatted text
 function generateFormattedText(calendarData, hijriData, gregorianDate) {
     const headers = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
     const hijriMonth = hijriData.HijriMonthName;
