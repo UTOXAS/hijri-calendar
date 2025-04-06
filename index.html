@@ -4,24 +4,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="تقويم هجري عربي يعرض التاريخ الهجري والميلادي بدقة حسب دار الإفتاء المصرية">
+    <meta name="description" content="تقويم هجري عربي يعرض التاريخ الهجري والميلادي بدقة باستخدام واجهة برمجة مجانية">
     <title>التقويم الهجري</title>
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
     <div class="container">
-        <header>
-            <h1 id="month-year"></h1>
-            <div class="nav-controls">
-                <button id="prev-month">السابق</button>
-                <button id="next-month">التالي</button>
+        <header class="my-4">
+            <h1 id="month-year" class="text-center"></h1>
+            <div class="nav-controls d-flex justify-content-center gap-3 mt-3">
+                <button id="prev-month" class="btn btn-neo">السابق</button>
+                <button id="next-month" class="btn btn-neo">التالي</button>
+            </div>
+            <div class="copy-controls d-flex justify-content-center gap-3 mt-3">
+                <button id="copy-csv" class="btn btn-neo">نسخ كـ CSV</button>
+                <button id="copy-text" class="btn btn-neo">نسخ كـ نص</button>
             </div>
         </header>
         <main>
-            <div id="loading" class="loading">جارٍ التحميل...</div>
-            <table id="calendar" class="calendar-table">
-                <thead>
+            <div id="loading" class="loading text-center my-3">جارٍ التحميل...</div>
+            <div id="error-alert" class="alert alert-danger d-none" role="alert"></div>
+            <table id="calendar" class="calendar-table table table-bordered">
+                <thead class="table-light">
                     <tr>
                         <th>الجمعة</th>
                         <th>الخميس</th>
@@ -35,11 +42,19 @@
                 <tbody id="calendar-body"></tbody>
             </table>
         </main>
+        <footer class="text-center mt-4">
+            <p class="credits">بيانات التاريخ الهجري مقدمة من:
+                <a href="http://di107.dar-alifta.org/api/HijriDate?langID=1" target="_blank">دار الإفتاء المصرية</a>
+                و
+                <a href="http://api.aladhan.com/v1/gToH" target="_blank">Aladhan API</a>
+            </p>
+        </footer>
     </div>
     <script src="js/utils.js"></script>
     <script src="js/api.js"></script>
     <script src="js/calendar.js"></script>
     <script src="js/main.js"></script>
+    <script src="assets/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
