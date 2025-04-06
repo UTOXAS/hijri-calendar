@@ -1,6 +1,6 @@
 // Fetch today's Hijri date from Dar Al-Ifta via Google Apps Script proxy
 async function fetchHijriDateToday() {
-    const proxyUrl = 'https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLitlcDmZcrKHfXu_XfTSTmy41d2fB-g8-AFQfbjoaDd0Q99MWKBVnpGcfsG4-bvNiwG7buLtYw9BnzNW5vEPjgrLAxsjHX9hrdkGm6fpmoYgBDVE4tl7tPaDbumUYvLcajnWY4iw2-VAFADnzonJFaW0KK3Wcd0A-qZBImpvMoyO0P948XScPeTlQ6Ubg2H_9Sl3LK1WlKu1krS1OCt7170LUgaMQ-y6EM0sYuSi2R28I02dgzqv7pwEuQOPAhNEHqj5jjQUQkCoOTn0s_18aI-vt24ng&lib=MCXVAbjLIrZqshkRZVm00N6_bX6_g3ydw'; // Replace with your deployed URL
+    const proxyUrl = 'https://script.google.com/macros/s/AKfycbxuqJkRj9BOGHh2Cc0Sm4JqQXNcqZXmUTTPmi_xr91_8d2m6f_7JEBDfptUdOGINefa/exec'; // Replace with your deployed URL
     try {
         const response = await fetch(proxyUrl);
         if (!response.ok) throw new Error(`فشل في جلب بيانات دار الإفتاء: ${response.status}`);
@@ -17,9 +17,28 @@ async function fetchHijriDateToday() {
             }
         };
 
+        // Map English month names to Arabic
+        const monthNameMap = {
+            'Muharram': 'مُحَرَّم',
+            'Safar': 'صَفَر',
+            'Rabi‘al-Awwal': 'رَبيع الأوَّل',
+            'Rabi‘ath-Thani': 'رَبيع الثاني',
+            'Jumada al-Ula': 'جُمادى الأولى',
+            'Jumada al-Akhirah': 'جُمادى الآخرة',
+            'Rajab': 'رَجَب',
+            'Sha‘ban': 'شَعْبان',
+            'Ramadan': 'رَمَضان',
+            'Shawwal': 'شَوّال',
+            'Dhu al-Qa‘dah': 'ذو القَعدة',
+            'Dhu al-Hijjah': 'ذو الحِجَّة'
+        };
+
+        const monthName = decodeString(data.month);
+        const arabicMonthName = monthNameMap[monthName] || monthName; // Fallback to original if not found
+
         return {
             hijriDay: data.day !== null && !isNaN(data.day) ? data.day : 1, // Fallback to 1 if null or invalid
-            hijriMonthName: decodeString(data.month),
+            hijriMonthName: arabicMonthName,
             hijriYear: decodeString(data.year),
             gregorianDate: new Date(data.gregorianDate)
         };
