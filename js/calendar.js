@@ -34,9 +34,10 @@ function generateCalendar(hijriData, gregorianDate) {
             if (position >= firstDayWeekday && dayCounter <= daysInMonth) {
                 const gregDay = new Date(gregorianStart);
                 gregDay.setDate(gregorianStart.getDate() + (dayCounter - 1));
-                const gregText = gregDay.getDate() + (gregDay.getMonth() !== gregorianStart.getMonth() ? ` ${gregDay.toLocaleString('ar', { month: 'long' })}` : '');
+                const gregMonth = gregDay.toLocaleString('ar', { month: 'long' });
+                const gregText = gregDay.getDate() + (gregDay.getMonth() !== gregorianStart.getMonth() ? ` ${gregMonth}` : '');
                 cell.textContent = `${dayCounter} (${gregText})`;
-                cell.title = `${formatHijriDate(dayCounter, hijriMonth, hijriYear)} - ${formatGregorianDate(gregDay.getDate(), gregDay.toLocaleString('ar', { month: 'long' }), gregorianYear)}`;
+                cell.title = `${formatHijriDate(dayCounter, hijriMonth, hijriYear)} - ${formatGregorianDate(gregDay.getDate(), gregMonth, gregorianYear)}`;
 
                 const today = new Date();
                 if (gregDay.toDateString() === today.toDateString()) {
@@ -56,16 +57,36 @@ function generateCalendar(hijriData, gregorianDate) {
     return calendarData;
 }
 
-// Navigate to previous month
-function prevMonth(currentDate) {
-    currentDate.setMonth(currentDate.getMonth() - 1);
-    return new Date(currentDate);
+// Navigate to previous Hijri month
+function prevMonth(hijriMonth, hijriYear) {
+    const hijriMonths = [
+        'مُحَرَّم', 'صَفَر', 'رَبيع الأوَّل', 'رَبيع الثاني', 'جُمادى الأولى', 'جُمادى الآخرة',
+        'رَجَب', 'شَعْبان', 'رَمَضان', 'شَوّال', 'ذو القَعدة', 'ذو الحِجَّة'
+    ];
+    let monthIndex = hijriMonths.indexOf(hijriMonth);
+    let year = parseInt(hijriYear);
+    monthIndex--;
+    if (monthIndex < 0) {
+        monthIndex = 11;
+        year--;
+    }
+    return { month: hijriMonths[monthIndex], year: year.toString() };
 }
 
-// Navigate to next month
-function nextMonth(currentDate) {
-    currentDate.setMonth(currentDate.getMonth() + 1);
-    return new Date(currentDate);
+// Navigate to next Hijri month
+function nextMonth(hijriMonth, hijriYear) {
+    const hijriMonths = [
+        'مُحَرَّم', 'صَفَر', 'رَبيع الأوَّل', 'رَبيع الثاني', 'جُمادى الأولى', 'جُمادى الآخرة',
+        'رَجَب', 'شَعْبان', 'رَمَضان', 'شَوّال', 'ذو القَعدة', 'ذو الحِجَّة'
+    ];
+    let monthIndex = hijriMonths.indexOf(hijriMonth);
+    let year = parseInt(hijriYear);
+    monthIndex++;
+    if (monthIndex > 11) {
+        monthIndex = 0;
+        year++;
+    }
+    return { month: hijriMonths[monthIndex], year: year.toString() };
 }
 
 // Generate CSV format

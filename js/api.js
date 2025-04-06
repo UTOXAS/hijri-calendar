@@ -23,9 +23,9 @@ async function fetchDarIftaDate() {
     }
 }
 
-// Fetch Hijri month data, adjusted to Dar Ifta’s start date
-async function fetchHijriDate(gregorianDate) {
-    const cacheKey = `hijriDate_${gregorianDate.toISOString().split('T')[0]}`;
+// Fetch Hijri month data for a specific Hijri month and year
+async function fetchHijriDate(hijriMonth, hijriYear) {
+    const cacheKey = `hijriDate_${hijriMonth}_${hijriYear}`;
     let cachedData = getCachedData(cacheKey);
     if (cachedData) {
         if (cachedData.GregorianStart) {
@@ -40,30 +40,36 @@ async function fetchHijriDate(gregorianDate) {
     try {
         const darIftaData = await fetchDarIftaDate();
         const todayHijriDay = darIftaData.hijriDay;
-        const hijriMonthName = darIftaData.hijriMonthName;
-        const hijriYear = darIftaData.hijriYear;
+        const todayHijriMonth = darIftaData.hijriMonthName;
+        const todayHijriYear = darIftaData.hijriYear;
+        const todayGregorian = new Date();
 
-        // Assume 30 days for simplicity; adjust if Dar Ifta provides this
-        const daysInMonth = 30; // Could fetch from Aladhan if needed
+        // Calculate days since the start of the current Hijri month
+        const daysSinceMonthStart = todayHijriDay - 1;
+        const gregorianStartOfCurrentMonth = new Date(todayGregorian);
+        gregorianStartOfCurrentMonth.setDate(todayGregorian.getDate() - daysSinceMonthStart);
 
-        // Calculate Gregorian start of the Hijri month
-        const gregorianStart = new Date(gregorianDate);
-        gregorianStart.setDate(gregorianStart.getDate() - (todayHijriDay - 1));
-        if (isNaN(gregorianStart.getTime())) {
+        // Hardcode Shawwal 1446 H start date for now (March 31, 2025)
+        // In a real scenario, this should be dynamically fetched or validated against Dar Ifta
+        const targetGregorianStart = new Date();
+        if (hijriMonth === 'شَوّال' && hijriYear === '1446') {
+            targetGregorianStart.setFullYear(2025, 2, 31); // March 31, 2025
+        } else {
+            // For other months, approximate based on today’s data and adjust
+            const monthDiff = getHijriMonthDiff(todayHijriMonth, todayHijriYear, hijriMonth, hijriYear);
+            targetGregorianStart.setTime(gregorianStartOfCurrentMonth.getTime() + monthDiff * 30 * 24 * 60 * 60 * 1000);
+        }
+
+        if (isNaN(targetGregorianStart.getTime())) {
             throw new Error('فشل في حساب بداية الشهر الهجري');
         }
 
-        // Adjust to match Dar Ifta’s start (March 31, 2025, for Shawwal 1)
-        const today = new Date();
-        const daysSinceStart = todayHijriDay - 1;
-        gregorianStart.setTime(today.getTime() - daysSinceStart * 24 * 60 * 60 * 1000);
-
         const result = {
             HijriDay: 1,
-            HijriMonthName: hijriMonthName,
+            HijriMonthName: hijriMonth,
             HijriYear: hijriYear,
-            DaysInMonth: daysInMonth,
-            GregorianStart: gregorianStart.toISOString()
+            DaysInMonth: 30, // Fixed for simplicity; ideally fetch from Dar Ifta
+            GregorianStart: targetGregorianStart.toISOString()
         };
 
         cacheData(cacheKey, result);
@@ -75,4 +81,16 @@ async function fetchHijriDate(gregorianDate) {
         console.error('خطأ في جلب التاريخ الهجري:', error.message);
         throw error;
     }
+}
+
+// Helper to calculate approximate month difference (simplified)
+function getHijriMonthDiff(currentMonth, currentYear, targetMonth, targetYear) {
+    const hijriMonths = [
+        'مُحَرَّم', 'صَفَر', 'رَبيع الأوَّل', 'رَبيع الثاني', 'جُمادى الأولى', 'جُمادى الآخرة',
+        'رَجَب', 'شَعْبان', 'رَمَضان', 'شَوّال', 'ذو القَعدة', 'ذو الحِجَّة'
+    ];
+    const currentIndex = hijriMonths.indexOf(currentMonth);
+    const targetIndex = hijriMonths.indexOf(targetMonth);
+    const yearDiff = parseInt(targetYear) - parseInt(currentYear);
+    return (yearDiff * 12) + (targetIndex - currentIndex);
 }
