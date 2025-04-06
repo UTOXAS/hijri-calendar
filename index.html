@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="تقويم هجري عربي يعرض التاريخ الهجري والميلادي بدقة حسب دار الإفتاء المصرية">
+    <title>التقويم الهجري</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1 id="month-year"></h1>
+            <div class="nav-controls">
+                <button id="prev-month">السابق</button>
+                <button id="next-month">التالي</button>
+            </div>
+        </header>
+        <main>
+            <div id="loading" class="loading">جارٍ التحميل...</div>
+            <table id="calendar" class="calendar-table">
+                <thead>
+                    <tr>
+                        <th>الجمعة</th>
+                        <th>الخميس</th>
+                        <th>الأربعاء</th>
+                        <th>الثلاثاء</th>
+                        <th>الإثنين</th>
+                        <th>الأحد</th>
+                        <th>السبت</th>
+                    </tr>
+                </thead>
+                <tbody id="calendar-body"></tbody>
+            </table>
+        </main>
+    </div>
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/calendar.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
