@@ -3,11 +3,14 @@ async function fetchHijriDate(gregorianDate) {
     const cacheKey = `hijriDate_${gregorianDate.toISOString().split('T')[0]}`;
     let cachedData = getCachedData(cacheKey);
     if (cachedData) {
-        // Convert cached GregorianStart back to Date object
         if (cachedData.GregorianStart) {
             cachedData.GregorianStart = new Date(cachedData.GregorianStart);
+            if (isNaN(cachedData.GregorianStart.getTime())) {
+                console.warn('Cached GregorianStart is invalid, refetching:', cachedData);
+            } else {
+                return cachedData;
+            }
         }
-        return cachedData;
     }
 
     const day = gregorianDate.getDate();
@@ -20,16 +23,18 @@ async function fetchHijriDate(gregorianDate) {
         if (!response.ok) throw new Error(`فشل في جلب البيانات من واجهة البرمجة: ${response.status}`);
 
         const data = await response.json();
+        console.log('API Response:', data); // Debug log
+
         if (data.code !== 200 || !data.data || !data.data.hijri) {
             throw new Error('استجابة غير صالحة من الخادم: ' + JSON.stringify(data));
         }
 
         const hijriData = data.data.hijri;
 
-        // Validate and extract required fields
+        // Validate and extract required fields with fallbacks
         const hijriDay = parseInt(hijriData.day, 10) || 1;
-        const daysInMonth = parseInt(hijriData.month.length, 10) || 30;
-        const hijriMonthName = hijriData.month.ar || 'غير محدد';
+        const daysInMonth = parseInt(hijriData.month?.length, 10) || 30;
+        const hijriMonthName = hijriData.month?.ar || 'غير محدد';
         const hijriYear = hijriData.year || 'غير محدد';
 
         // Calculate the start of the Hijri month

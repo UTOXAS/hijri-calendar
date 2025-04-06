@@ -16,9 +16,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentCalendarData = generateCalendar(hijriData, currentDate);
             const newGregorianStart = new Date(hijriData.GregorianStart);
             if (isNaN(newGregorianStart.getTime())) {
-                throw new Error('GregorianStart غير صالح بعد التحديث: ' + hijriData.GregorianStart);
+                console.error('GregorianStart غير صالح:', hijriData.GregorianStart);
+                currentDate = new Date(); // Fallback to today
+            } else {
+                currentDate = newGregorianStart; // Sync with Hijri month start
             }
-            currentDate = newGregorianStart; // Sync with Hijri month start
         } catch (error) {
             console.error('فشل في تحميل التقويم:', error);
             errorAlert.textContent = 'حدث خطأ أثناء تحميل التقويم. تحقق من اتصالك بالإنترنت وحاول مرة أخرى.';
