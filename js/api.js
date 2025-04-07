@@ -21,24 +21,15 @@ async function fetchHijriDateToday() {
             'Dhul-Hijja': 'ذو الحِجَّة'
         };
 
-        const hijriMonths = [
-            'مُحَرَّم', 'صَفَر', 'رَبيع الأوَّل', 'رَبيع الثاني', 'جُمادى الأولى', 'جُمادى الآخرة',
-            'رَجَب', 'شَعْبان', 'رَمَضان', 'شَوّال', 'ذو القَعدة', 'ذو الحِجَّة'
-        ];
-        const monthIndex = hijriMonths.indexOf(data.hijriMonth);
-        const monthData = data.aladhanCalendar[monthIndex];
-        const daysInMonth = monthData.length;
-
-        const todayGregorian = new Date(data.gregorianDate);
-        todayGregorian.setHours(0, 0, 0, 0);
-        const gregorianStart = new Date(todayGregorian);
-        gregorianStart.setDate(todayGregorian.getDate() - (data.hijriDay - 1));
+        const hijriMonthName = monthNameMap[data.hijriMonth] || data.hijriMonth;
+        const gregorianStart = new Date(data.gregorianStart);
+        gregorianStart.setHours(0, 0, 0, 0);
 
         return {
             hijriDay: data.hijriDay,
-            hijriMonthName: data.hijriMonth,
+            hijriMonthName: hijriMonthName,
             hijriYear: data.hijriYear,
-            daysInMonth: daysInMonth,
+            daysInMonth: data.daysInMonth,
             gregorianStart: gregorianStart
         };
     } catch (error) {
