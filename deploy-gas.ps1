@@ -7,6 +7,12 @@ param (
 $scriptId = "1TLu97O0mD8Sr8q7T0RBvt-_GchO8feMQGHunQE42NS923aQPNkH9tTNt"
 $baseUrl = "https://script.google.com/macros/s"
 
+# Instructions:
+# To run this script manually:
+# 1. In VS Code: Press F1, type "Run Task", select "Deploy GAS".
+# 2. In PowerShell: Navigate to project root and run `.\deploy-gas.ps1`.
+# Suggestion: After editing Scripts\Code.gs, manually run this task before committing changes.
+
 function Get-DeploymentId {
     $deploymentsOutput = clasp deployments 2>&1 | Out-String
     if ($deploymentsOutput -match "- ([\w-]+) @\d+ - Web app") {
