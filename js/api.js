@@ -4,6 +4,15 @@ async function fetchHijriDateToday() {
     const cachedData = getCachedData('hijriCalendar');
     if (cachedData) {
         console.log('Using cached data');
+        // Reconstruct Date objects from cached strings
+        cachedData.gregorianDate = new Date(cachedData.gregorianDate);
+        cachedData.calendar = cachedData.calendar.map(day => ({
+            ...day,
+            gregorian: {
+                ...day.gregorian,
+                date: new Date(day.gregorian.date)
+            }
+        }));
         return cachedData;
     }
 
