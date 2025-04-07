@@ -1,4 +1,4 @@
-﻿const proxyUrl = "https://script.google.com/macros/s/AKfycbx41tonPdf3eqy-y2Q5blIf0WcHYNboY1cGAr13uGdH5oS-V7ae7-tvewAfmca2cFi0/exec";
+﻿const proxyUrl = "https://script.google.com/macros/s/AKfycbyXe5C_fi-2iYgWZWcuw7EA6k787CorBoAcnnnmeCTXUSDZQURXsZZkO7Vryw0nL8aB/exec";
 
 async function fetchHijriDateToday() {
     const cachedData = getCachedData('hijriCalendar');
