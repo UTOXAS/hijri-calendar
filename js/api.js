@@ -1,8 +1,8 @@
-async function fetchHijriDateToday() {
-    const proxyUrl = "https://script.google.com/macros/s/AKfycbw5YJGaV-gmeHT5w5Gow948OTEKIiFjCcMOZt2xAZhgAveSZU9VTvbNj8Qduj-5VfwO/exec";
+﻿async function fetchHijriDateToday() {
+    const proxyUrl = "https://script.google.com/macros/s/AKfycbwS-S38F2r6G7tFTULVceS4DhpfGDgN9X659LpP1nJyfJuUqcU1FKxuIQh5eocjUnWs/exec";
     try {
         const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error(`فشل في جلب البيانات: ${response.status}`);
+        if (!response.ok) throw new Error(`ÙØ´Ù„ ÙÙŠ Ø¬Ù„Ø¨ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª: ${response.status}`);
         const data = await response.json();
         if (data.error) throw new Error(data.error);
 
@@ -19,7 +19,7 @@ async function fetchHijriDateToday() {
             }))
         };
     } catch (error) {
-        console.error('خطأ في جلب التاريخ:', error.message);
+        console.error('Ø®Ø·Ø£ ÙÙŠ Ø¬Ù„Ø¨ Ø§Ù„ØªØ§Ø±ÙŠØ®:', error.message);
         throw error;
     }
 }

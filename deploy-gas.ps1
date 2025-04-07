@@ -19,18 +19,37 @@ function Get-DeploymentId {
 }
 
 function Get-WebAppUrl {
-    $deploymentsOutput = clasp deployments 2>&1 | Out-String
-    if ($deploymentsOutput -match "https://script\.google\.com/macros/s/[\w-]+/exec") {
-        $url = $matches[0]
-        Write-Host "Found web app URL: $url"
-        return $url
-    } elseif ($deploymentsOutput -match "- ([\w-]+) @\d+ - Web app") {
+    param (
+        [string]$deployOutput = ""
+    )
+    # First, try to parse the deploy output directly
+    if ($deployOutput -match "Deployed ([\w-]+) @\d+") {
         $deploymentId = $matches[1]
         $url = "$baseUrl/$deploymentId/exec"
-        Write-Host "Constructed web app URL: $url"
+        Write-Host "Parsed web app URL from deploy output: $url"
         return $url
     }
-    Write-Host "No web app URL or deployment ID found."
+
+    # Fallback: Check clasp deployments with retry logic
+    $maxRetries = 3
+    $retryDelaySeconds = 2
+    for ($i = 0; $i -lt $maxRetries; $i++) {
+        $deploymentsOutput = clasp deployments 2>&1 | Out-String
+        if ($deploymentsOutput -match "https://script\.google\.com/macros/s/[\w-]+/exec") {
+            $url = $matches[0]
+            Write-Host "Found web app URL: $url"
+            return $url
+        } elseif ($deploymentsOutput -match "- ([\w-]+) @\d+ - Web app") {
+            $deploymentId = $matches[1]
+            $url = "$baseUrl/$deploymentId/exec"
+            Write-Host "Constructed web app URL: $url"
+            return $url
+        }
+        Write-Host "Retry $($i + 1) of ${maxRetries}: No web app URL or deployment ID found yet. Waiting ${retryDelaySeconds} seconds..."
+        Start-Sleep -Seconds $retryDelaySeconds
+    }
+
+    Write-Host "Failed to retrieve web app URL after retries."
     return $null
 }
 
@@ -64,18 +83,19 @@ function Deploy-GasProject {
             Write-Error "Failed to redeploy web app: $redeployOutput"
             exit 1
         }
+        $newUrl = Get-WebAppUrl -deployOutput $redeployOutput
     } else {
         Write-Host "No suitable deployment found. Creating a new web app deployment..."
         $deployOutput = clasp deploy -V $version -d "Initial web app deployment" 2>&1 | Out-String
         if ($deployOutput -match "Deployed") {
             Write-Host "Successfully deployed new web app: $deployOutput"
+            $newUrl = Get-WebAppUrl -deployOutput $deployOutput
         } else {
             Write-Error "Failed to deploy new web app: $deployOutput"
             exit 1
         }
     }
 
-    $newUrl = Get-WebAppUrl
     if (-not $newUrl) {
         Write-Error "Failed to retrieve web app URL after deployment."
         exit 1
