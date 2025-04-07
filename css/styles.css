@@ -64,6 +64,7 @@ h1 {
     text-align: center;
     border: 2px solid #000;
     min-width: 0; /* Prevent fixed-width issues */
+    white-space: nowrap; /* Prevent text wrapping */
 }
 
 .calendar-table td {
@@ -99,8 +100,8 @@ footer .credits a:hover {
 @media (max-width: 600px) {
     .calendar-table th,
     .calendar-table td {
-        padding: 8px; /* Reduced from 10px */
-        font-size: 0.85rem; /* Slightly smaller for better fit */
+        padding: 8px;
+        font-size: 0.85rem;
     }
 
     h1 {
@@ -114,5 +115,22 @@ footer .credits a:hover {
 
     footer {
         font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .calendar-table th,
+    .calendar-table td {
+        padding: 5px; /* Further reduced for compactness */
+        font-size: 0.75rem; /* Smaller text for very small screens */
+    }
+
+    h1 {
+        font-size: 1.3rem;
+    }
+
+    .btn-neo {
+        padding: 6px 12px;
+        font-size: 0.85rem;
     }
 }

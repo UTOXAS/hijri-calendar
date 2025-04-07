@@ -13,7 +13,7 @@ function generateCalendar(hijriData) {
     const gregorianYear = gregorianStart.getFullYear();
     const gregorianHeader = gregorianStartMonth === gregorianEndMonth
         ? `${gregorianStartMonth} ${gregorianYear} م`
-        : `${gregorianStartMonth} إلى ${gregorianEndMonth} ${gregorianYear} م`;
+        : `${gregorianStartMonth} / ${gregorianEndMonth} ${gregorianYear} م`;
 
     document.getElementById('month-year').textContent = `${hijriMonth} ${hijriYear} هـ - ${gregorianHeader}`;
 
@@ -77,7 +77,7 @@ function generateFormattedText(calendarData, hijriData) {
     const gregorianYear = gregorianStart.getFullYear();
     const gregorianHeader = gregorianStartMonth === gregorianEndMonth
         ? `${gregorianStartMonth} ${gregorianYear} م`
-        : `${gregorianStartMonth} إلى ${gregorianEndMonth} ${gregorianYear} م`;
+        : `${gregorianStartMonth} / ${gregorianEndMonth} ${gregorianYear} م`;
 
     let text = `${hijriMonth} ${hijriYear} هـ - ${gregorianHeader}\n\n`;
     const columnWidth = 13;
