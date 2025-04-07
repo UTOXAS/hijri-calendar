@@ -34,8 +34,9 @@ function generateCalendar(hijriData) {
                 const gregDay = day.gregorian.day;
                 const gregMonth = day.gregorian.date.toLocaleString('ar', { month: 'long' });
                 const gregYear = day.gregorian.year;
-                const isFirstOfGregMonth = gregDay === 1;
-                const isLastOfGregMonth = gregDay === new Date(gregYear, day.gregorian.date.getMonth() + 1, 0).getDate();
+                const isFirstOfGregMonth = gregDay === '1';
+                const lastDayOfMonth = new Date(gregYear, day.gregorian.date.getMonth() + 1, 0).getDate();
+                const isLastOfGregMonth = gregDay === String(lastDayOfMonth);
                 const gregText = `${gregDay}${(isFirstOfGregMonth || isLastOfGregMonth) ? ` ${gregMonth}` : ''}`;
                 cell.textContent = `${day.hijri.day} (${gregText})`;
                 cell.title = `${formatHijriDate(day.hijri.day, hijriMonth, hijriYear)} - ${formatGregorianDate(gregDay, gregMonth, gregYear)}`;
