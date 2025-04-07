@@ -4,9 +4,9 @@ function generateCalendar(hijriData) {
 
     const hijriMonth = hijriData.hijriMonthName;
     const hijriYear = hijriData.hijriYear;
-    const gregorianStart = new Date(hijriData.gregorianStart);
-    const gregorianEnd = new Date(gregorianStart);
-    gregorianEnd.setDate(gregorianStart.getDate() + hijriData.daysInMonth - 1);
+    const calendar = hijriData.calendar;
+    const gregorianStart = calendar[0].gregorian.date;
+    const gregorianEnd = calendar[calendar.length - 1].gregorian.date;
 
     const gregorianStartMonth = gregorianStart.toLocaleString('ar', { month: 'long' });
     const gregorianEndMonth = gregorianEnd.toLocaleString('ar', { month: 'long' });
@@ -17,31 +17,31 @@ function generateCalendar(hijriData) {
 
     document.getElementById('month-year').textContent = `${hijriMonth} ${hijriYear} هـ - ${gregorianHeader}`;
 
-    const daysInMonth = hijriData.daysInMonth;
-    const firstDayWeekday = gregorianStart.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
-
-    let dayCounter = 1;
+    const firstDayWeekday = (gregorianStart.getDay() + 1) % 7; // Adjust: Sunday = 0 -> 1, Saturday = 6 -> 0
+    const daysInMonth = calendar.length;
     const weeks = Math.ceil((daysInMonth + firstDayWeekday) / 7);
     const calendarData = [];
 
+    let dayCounter = 0;
     for (let i = 0; i < weeks; i++) {
         const row = document.createElement('tr');
         const rowData = new Array(7).fill('');
         for (let j = 0; j < 7; j++) {
             const cell = document.createElement('td');
             const position = i * 7 + j;
-            if (position >= firstDayWeekday && dayCounter <= daysInMonth) {
-                const gregDay = new Date(gregorianStart);
-                gregDay.setDate(gregorianStart.getDate() + (dayCounter - 1));
-                const gregMonth = gregDay.toLocaleString('ar', { month: 'long' });
-                const isFirstOfGregMonth = gregDay.getDate() === 1;
-                const isLastOfGregMonth = gregDay.getDate() === new Date(gregDay.getFullYear(), gregDay.getMonth() + 1, 0).getDate();
-                const gregText = `${gregDay.getDate()}${(isFirstOfGregMonth || isLastOfGregMonth) ? ` ${gregMonth}` : ''}`;
-                cell.textContent = `${dayCounter} (${gregText})`;
-                cell.title = `${formatHijriDate(dayCounter, hijriMonth, hijriYear)} - ${formatGregorianDate(gregDay.getDate(), gregMonth, gregorianYear)}`;
+            if (position >= firstDayWeekday && dayCounter < daysInMonth) {
+                const day = calendar[dayCounter];
+                const gregDay = day.gregorian.day;
+                const gregMonth = day.gregorian.date.toLocaleString('ar', { month: 'long' });
+                const gregYear = day.gregorian.year;
+                const isFirstOfGregMonth = gregDay === 1;
+                const isLastOfGregMonth = gregDay === new Date(gregYear, day.gregorian.date.getMonth() + 1, 0).getDate();
+                const gregText = `${gregDay}${(isFirstOfGregMonth || isLastOfGregMonth) ? ` ${gregMonth}` : ''}`;
+                cell.textContent = `${day.hijri.day} (${gregText})`;
+                cell.title = `${formatHijriDate(day.hijri.day, hijriMonth, hijriYear)} - ${formatGregorianDate(gregDay, gregMonth, gregYear)}`;
 
                 const today = new Date();
-                if (gregDay.toDateString() === today.toDateString()) {
+                if (day.gregorian.date.toDateString() === today.toDateString()) {
                     cell.classList.add('current-day');
                 }
                 rowData[j] = cell.textContent;
@@ -69,9 +69,8 @@ function generateFormattedText(calendarData, hijriData) {
     const headers = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
     const hijriMonth = hijriData.hijriMonthName;
     const hijriYear = hijriData.hijriYear;
-    const gregorianStart = new Date(hijriData.gregorianStart);
-    const gregorianEnd = new Date(gregorianStart);
-    gregorianEnd.setDate(gregorianStart.getDate() + hijriData.daysInMonth - 1);
+    const gregorianStart = hijriData.calendar[0].gregorian.date;
+    const gregorianEnd = hijriData.calendar[hijriData.calendar.length - 1].gregorian.date;
     const gregorianStartMonth = gregorianStart.toLocaleString('ar', { month: 'long' });
     const gregorianEndMonth = gregorianEnd.toLocaleString('ar', { month: 'long' });
     const gregorianYear = gregorianStart.getFullYear();

@@ -6,31 +6,17 @@ async function fetchHijriDateToday() {
         const data = await response.json();
         if (data.error) throw new Error(data.error);
 
-        const monthNameMap = {
-            'Muharram': 'مُحَرَّم',
-            'Safar': 'صَفَر',
-            'RabiealAwwal': 'رَبيع الأوَّل',
-            'RabiealThani': 'رَبيع الثاني',
-            'JumadaalAwwal': 'جُمادى الأولى',
-            'JumadaalThani': 'جُمادى الآخرة',
-            'Rajab': 'رَجَب',
-            'Saban': 'شَعْبان',
-            'Ramadan': 'رَمَضان',
-            'Shawwal': 'شَوّال',
-            'DhulQida': 'ذو القَعدة',
-            'DhulHijja': 'ذو الحِجَّة'
-        };
-
-        const hijriMonthName = monthNameMap[data.hijriMonth] || data.hijriMonth;
-        const gregorianStart = new Date(data.gregorianStart);
-        gregorianStart.setHours(0, 0, 0, 0);
-
         return {
             hijriDay: data.hijriDay,
-            hijriMonthName: hijriMonthName,
+            hijriMonthName: data.hijriMonth,
             hijriYear: data.hijriYear,
-            daysInMonth: data.daysInMonth,
-            gregorianStart: gregorianStart
+            calendar: data.calendar.map(day => ({
+                hijri: day.hijri,
+                gregorian: {
+                    ...day.gregorian,
+                    date: new Date(`${day.gregorian.year}-${day.gregorian.month}-${day.gregorian.day.padStart(2, '0')}`)
+                }
+            }))
         };
     } catch (error) {
         console.error('خطأ في جلب التاريخ:', error.message);

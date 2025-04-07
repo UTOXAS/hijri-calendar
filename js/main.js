@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('copy-csv').addEventListener('click', async () => {
         try {
-            const hijriData = await fetchHijriDateToday();
             const csv = generateCSV(currentCalendarData);
             await navigator.clipboard.writeText(csv);
             alert('تم نسخ التقويم كـ CSV');

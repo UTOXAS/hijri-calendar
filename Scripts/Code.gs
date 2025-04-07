@@ -3,7 +3,7 @@ function doGet(e) {
   try {
     // Fetch current Hijri date from Dar Al-Ifta
     const hijriUrl = 'http://di107.dar-alifta.org/api/HijriDate?langID=2';
-    const hijriResponse = UrlFetchApp.fetch(hijriUrl, { muteHttpExceptions: true });
+    const hijriResponse = UrlFetchApp.fetch(hijriUrl, { 'muteHttpExceptions': true });
     if (hijriResponse.getResponseCode() !== 200) {
       throw new Error('Failed to fetch Dar Al-Ifta data: ' + hijriResponse.getResponseCode());
     }
@@ -39,48 +39,43 @@ function doGet(e) {
 
     // Fetch unadjusted Aladhan calendar for the month
     const aladhanUrl = `https://api.aladhan.com/v1/hToGCalendar/${monthIndex}/${hijriYear}?calendarMethod=MATHEMATICAL&adjustment=0`;
-    const aladhanResponse = UrlFetchApp.fetch(aladhanUrl, { muteHttpExceptions: true });
+    const aladhanResponse = UrlFetchApp.fetch(aladhanUrl, { 'muteHttpExceptions': true });
     if (aladhanResponse.getResponseCode() !== 200) {
       throw new Error('Failed to fetch Aladhan data: ' + aladhanResponse.getResponseCode());
     }
     const aladhanData = JSON.parse(aladhanResponse.getContentText('UTF-8')).data;
 
-    // Parse unadjusted Gregorian date for the given Hijri day
-    const unadjustedGregorianParts = aladhanData[hijriDay - 1].gregorian.date.split('-');
-    const unadjustedGregorian = new Date(
-      parseInt(unadjustedGregorianParts[2], 10), // Year
-      parseInt(unadjustedGregorianParts[1], 10) - 1, // Month (0-based)
-      parseInt(unadjustedGregorianParts[0], 10) // Day
-    );
-
-    // Calculate adjustment based on today's Gregorian date
+    // Calculate adjustment
     const todayGregorian = new Date();
-    todayGregorian.setHours(0, 0, 0, 0); // Normalize to midnight
+    const unadjustedGregorian = new Date(aladhanData[hijriDay - 1].gregorian.date.split('-').reverse().join('-'));
     const adjustment = Math.round((todayGregorian - unadjustedGregorian) / (1000 * 60 * 60 * 24));
 
-    // Fetch adjusted calendar with the calculated adjustment
+    // Fetch adjusted calendar
     const adjustedUrl = `https://api.aladhan.com/v1/hToGCalendar/${monthIndex}/${hijriYear}?calendarMethod=MATHEMATICAL&adjustment=${adjustment}`;
-    const adjustedResponse = UrlFetchApp.fetch(adjustedUrl, { muteHttpExceptions: true });
+    const adjustedResponse = UrlFetchApp.fetch(adjustedUrl, { 'muteHttpExceptions': true });
     if (adjustedResponse.getResponseCode() !== 200) {
       throw new Error('Failed to fetch adjusted Aladhan data: ' + adjustedResponse.getResponseCode());
     }
-    const adjustedData = JSON.parse(adjustedResponse.getContentText('UTF-8')).data;
-
-    const daysInMonth = adjustedData.length;
-    const gregorianStartParts = adjustedData[0].gregorian.date.split('-');
-    const gregorianStart = new Date(
-      parseInt(gregorianStartParts[2], 10),
-      parseInt(gregorianStartParts[1], 10) - 1,
-      parseInt(gregorianStartParts[0], 10)
-    );
+    const finalAladhanData = JSON.parse(adjustedResponse.getContentText('UTF-8')).data;
 
     const result = {
       hijriDay: hijriDay,
       hijriMonth: hijriMonth,
       hijriYear: hijriYear,
       gregorianDate: todayGregorian.toISOString(),
-      daysInMonth: daysInMonth,
-      gregorianStart: gregorianStart.toISOString(),
+      calendar: finalAladhanData.map(day => ({
+        hijri: {
+          day: parseInt(day.hijri.day, 10),
+          month: day.hijri.month.ar,
+          year: day.hijri.year
+        },
+        gregorian: {
+          day: parseInt(day.gregorian.day, 10),
+          month: day.gregorian.month.en,
+          year: day.gregorian.year,
+          weekday: day.gregorian.weekday.en
+        }
+      })),
       rawHijriResponse: hijriText
     };
 
