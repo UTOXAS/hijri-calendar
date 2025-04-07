@@ -1,5 +1,5 @@
 async function fetchHijriDateToday() {
-    const proxyUrl = 'https://script.google.com/macros/s/AKfycbxuqJkRj9BOGHh2Cc0Sm4JqQXNcqZXmUTTPmi_xr91_8d2m6f_7JEBDfptUdOGINefa/exec';
+    const proxyUrl = 'https://script.google.com/macros/s/AKfycbwl8HZHd6qsGiThq3HSBrhtHKTWjJn7ShbwbWC7Fo8CGiVN76p5Nersez9Vb3ve-_b5/exec';
     try {
         const response = await fetch(proxyUrl);
         if (!response.ok) throw new Error(`فشل في جلب البيانات: ${response.status}`);
