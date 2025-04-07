@@ -22,20 +22,23 @@ async function fetchHijriDateToday() {
         hijriMonthName: data.hijriMonth,
         hijriYear: data.hijriYear,
         gregorianDate: new Date(data.gregorianDate),
-        calendar: data.calendar.map(day => ({
-            hijri: {
-                day: day.hijri.day,
-                month: day.hijri.month,
-                year: day.hijri.year
-            },
-            gregorian: {
-                day: String(day.gregorian.day),
-                month: day.gregorian.month,
-                year: day.gregorian.year,
-                weekday: day.gregorian.weekday,
-                date: new Date(`${day.gregorian.year}-${day.gregorian.month}-${day.gregorian.day.padStart(2, '0')}`)
-            }
-        })),
+        calendar: data.calendar.map(day => {
+            const gregorianDayStr = String(day.gregorian.day); // Convert to string once
+            return {
+                hijri: {
+                    day: day.hijri.day,
+                    month: day.hijri.month,
+                    year: day.hijri.year
+                },
+                gregorian: {
+                    day: gregorianDayStr, // Use string value here
+                    month: day.gregorian.month,
+                    year: day.gregorian.year,
+                    weekday: day.gregorian.weekday,
+                    date: new Date(`${day.gregorian.year}-${day.gregorian.month}-${gregorianDayStr.padStart(2, '0')}`) // Use string value with padStart
+                }
+            };
+        }),
         rawHijriResponse: data.rawHijriResponse
     };
 
