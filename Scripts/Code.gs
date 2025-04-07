@@ -3,13 +3,13 @@ function doGet(e) {
   try {
     // Fetch current Hijri date from Dar Al-Ifta
     const hijriUrl = 'http://di107.dar-alifta.org/api/HijriDate?langID=2';
-    const hijriResponse = UrlFetchApp.fetch(hijriUrl, { 'muteHttpExceptions': true });
+    const hijriResponse = UrlFetchApp.fetch(hijriUrl, { muteHttpExceptions: true });
     if (hijriResponse.getResponseCode() !== 200) {
       throw new Error('Failed to fetch Dar Al-Ifta data: ' + hijriResponse.getResponseCode());
     }
     hijriText = Utilities.newBlob(hijriResponse.getContent(), 'application/octet-stream')
       .getDataAsString('UTF-8')
-      .replace(/[\u0000-\u001F\uFEFF\uFFFD"]/g, '') // Enhanced cleaning
+      .replace(/[\u0000-\u001F\uFEFF\uFFFD"]/g, '')
       .trim();
 
     const hijriParts = hijriText.split(' ');
@@ -39,31 +39,40 @@ function doGet(e) {
 
     // Fetch unadjusted Aladhan calendar for the month
     const aladhanUrl = `https://api.aladhan.com/v1/hToGCalendar/${monthIndex}/${hijriYear}?calendarMethod=MATHEMATICAL&adjustment=0`;
-    const aladhanResponse = UrlFetchApp.fetch(aladhanUrl, { 'muteHttpExceptions': true });
+    const aladhanResponse = UrlFetchApp.fetch(aladhanUrl, { muteHttpExceptions: true });
     if (aladhanResponse.getResponseCode() !== 200) {
       throw new Error('Failed to fetch Aladhan data: ' + aladhanResponse.getResponseCode());
     }
-    const aladhanText = aladhanResponse.getContentText('UTF-8');
-    const aladhanData = JSON.parse(aladhanText).data;
+    const aladhanData = JSON.parse(aladhanResponse.getContentText('UTF-8')).data;
 
-    // Calculate adjustment based on Dar Al-Ifta’s current date
+    // Parse unadjusted Gregorian date for the given Hijri day
+    const unadjustedGregorianParts = aladhanData[hijriDay - 1].gregorian.date.split('-');
+    const unadjustedGregorian = new Date(
+      parseInt(unadjustedGregorianParts[2], 10), // Year
+      parseInt(unadjustedGregorianParts[1], 10) - 1, // Month (0-based)
+      parseInt(unadjustedGregorianParts[0], 10) // Day
+    );
+
+    // Calculate adjustment based on today's Gregorian date
     const todayGregorian = new Date();
-    const unadjustedGregorian = new Date(aladhanData[hijriDay - 1].gregorian.date + ' ' + todayGregorian.getFullYear());
+    todayGregorian.setHours(0, 0, 0, 0); // Normalize to midnight
     const adjustment = Math.round((todayGregorian - unadjustedGregorian) / (1000 * 60 * 60 * 24));
 
-    // Fetch adjusted calendar if adjustment is needed
-    let finalAladhanData = aladhanData;
-    if (adjustment !== 0) {
-      const adjustedUrl = `https://api.aladhan.com/v1/hToGCalendar/${monthIndex}/${hijriYear}?calendarMethod=MATHEMATICAL&adjustment=${adjustment}`;
-      const adjustedResponse = UrlFetchApp.fetch(adjustedUrl, { 'muteHttpExceptions': true });
-      if (adjustedResponse.getResponseCode() !== 200) {
-        throw new Error('Failed to fetch adjusted Aladhan data: ' + adjustedResponse.getResponseCode());
-      }
-      finalAladhanData = JSON.parse(adjustedResponse.getContentText('UTF-8')).data;
+    // Fetch adjusted calendar with the calculated adjustment
+    const adjustedUrl = `https://api.aladhan.com/v1/hToGCalendar/${monthIndex}/${hijriYear}?calendarMethod=MATHEMATICAL&adjustment=${adjustment}`;
+    const adjustedResponse = UrlFetchApp.fetch(adjustedUrl, { muteHttpExceptions: true });
+    if (adjustedResponse.getResponseCode() !== 200) {
+      throw new Error('Failed to fetch adjusted Aladhan data: ' + adjustedResponse.getResponseCode());
     }
+    const adjustedData = JSON.parse(adjustedResponse.getContentText('UTF-8')).data;
 
-    const daysInMonth = finalAladhanData.length;
-    const gregorianStart = new Date(finalAladhanData[0].gregorian.date + ' ' + todayGregorian.getFullYear());
+    const daysInMonth = adjustedData.length;
+    const gregorianStartParts = adjustedData[0].gregorian.date.split('-');
+    const gregorianStart = new Date(
+      parseInt(gregorianStartParts[2], 10),
+      parseInt(gregorianStartParts[1], 10) - 1,
+      parseInt(gregorianStartParts[0], 10)
+    );
 
     const result = {
       hijriDay: hijriDay,

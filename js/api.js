@@ -1,5 +1,5 @@
 async function fetchHijriDateToday() {
-    const proxyUrl = "https://script.google.com/macros/s/AKfycbyrcjEa8nBpCICNmJwsSsVG4jIzLkrsBh_TS6dR0irlLgg5XPjNeLOzTXu0Vle_Gfvc/exec"; // Replace with new URL after deployment
+    const proxyUrl = "https://script.google.com/macros/s/AKfycbw5YJGaV-gmeHT5w5Gow948OTEKIiFjCcMOZt2xAZhgAveSZU9VTvbNj8Qduj-5VfwO/exec";
     try {
         const response = await fetch(proxyUrl);
         if (!response.ok) throw new Error(`فشل في جلب البيانات: ${response.status}`);
@@ -9,16 +9,16 @@ async function fetchHijriDateToday() {
         const monthNameMap = {
             'Muharram': 'مُحَرَّم',
             'Safar': 'صَفَر',
-            'Rabie’ al-Awwal': 'رَبيع الأوَّل',
-            'Rabie’ al-Thani': 'رَبيع الثاني',
-            'Jumada al-Awwal': 'جُمادى الأولى',
-            'Jumada al-Thani': 'جُمادى الآخرة',
+            'RabiealAwwal': 'رَبيع الأوَّل',
+            'RabiealThani': 'رَبيع الثاني',
+            'JumadaalAwwal': 'جُمادى الأولى',
+            'JumadaalThani': 'جُمادى الآخرة',
             'Rajab': 'رَجَب',
-            'Sa’ban': 'شَعْبان',
+            'Saban': 'شَعْبان',
             'Ramadan': 'رَمَضان',
             'Shawwal': 'شَوّال',
-            'Dhul-Qi’da': 'ذو القَعدة',
-            'Dhul-Hijja': 'ذو الحِجَّة'
+            'DhulQida': 'ذو القَعدة',
+            'DhulHijja': 'ذو الحِجَّة'
         };
 
         const hijriMonthName = monthNameMap[data.hijriMonth] || data.hijriMonth;
