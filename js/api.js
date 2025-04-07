@@ -28,7 +28,7 @@ async function fetchHijriDateToday() {
 
     const processedData = {
         hijriDay: data.hijriDay,
-        hijriMonthName: data.hijriMonth,
+        hijriMonthName: data.calendar[0].hijri.month, // Use Arabic month name from calendar
         hijriYear: data.hijriYear,
         gregorianDate: new Date(data.gregorianDate),
         calendar: data.calendar.map(day => {
@@ -40,11 +40,11 @@ async function fetchHijriDateToday() {
                     year: day.hijri.year
                 },
                 gregorian: {
-                    day: gregorianDayStr, // Use string value here
+                    day: gregorianDayStr,
                     month: day.gregorian.month,
                     year: day.gregorian.year,
                     weekday: day.gregorian.weekday,
-                    date: new Date(`${day.gregorian.year}-${day.gregorian.month}-${gregorianDayStr.padStart(2, '0')}`) // Use string value with padStart
+                    date: new Date(`${day.gregorian.year}-${day.gregorian.month}-${gregorianDayStr.padStart(2, '0')}`)
                 }
             };
         }),
