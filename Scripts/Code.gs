@@ -4,8 +4,12 @@ function doGet(e) {
     // Fetch current Hijri date from Dar Al-Ifta
     const hijriUrl = 'http://di107.dar-alifta.org/api/HijriDate?langID=2';
     const hijriResponse = UrlFetchApp.fetch(hijriUrl, { 'muteHttpExceptions': true });
-    hijriText = Utilities.newBlob(hijriResponse.getContent()).getDataAsString('UTF-8')
-      .replace(/[\u0000-\u001F\uFEFF"]/g, '')
+    if (hijriResponse.getResponseCode() !== 200) {
+      throw new Error('Failed to fetch Dar Al-Ifta data: ' + hijriResponse.getResponseCode());
+    }
+    hijriText = Utilities.newBlob(hijriResponse.getContent(), 'application/octet-stream')
+      .getDataAsString('UTF-8')
+      .replace(/[\u0000-\u001F\uFEFF\uFFFD"]/g, '') // Enhanced cleaning
       .trim();
 
     const hijriParts = hijriText.split(' ');
@@ -36,6 +40,9 @@ function doGet(e) {
     // Fetch unadjusted Aladhan calendar for the month
     const aladhanUrl = `https://api.aladhan.com/v1/hToGCalendar/${monthIndex}/${hijriYear}?calendarMethod=MATHEMATICAL&adjustment=0`;
     const aladhanResponse = UrlFetchApp.fetch(aladhanUrl, { 'muteHttpExceptions': true });
+    if (aladhanResponse.getResponseCode() !== 200) {
+      throw new Error('Failed to fetch Aladhan data: ' + aladhanResponse.getResponseCode());
+    }
     const aladhanText = aladhanResponse.getContentText('UTF-8');
     const aladhanData = JSON.parse(aladhanText).data;
 
@@ -49,6 +56,9 @@ function doGet(e) {
     if (adjustment !== 0) {
       const adjustedUrl = `https://api.aladhan.com/v1/hToGCalendar/${monthIndex}/${hijriYear}?calendarMethod=MATHEMATICAL&adjustment=${adjustment}`;
       const adjustedResponse = UrlFetchApp.fetch(adjustedUrl, { 'muteHttpExceptions': true });
+      if (adjustedResponse.getResponseCode() !== 200) {
+        throw new Error('Failed to fetch adjusted Aladhan data: ' + adjustedResponse.getResponseCode());
+      }
       finalAladhanData = JSON.parse(adjustedResponse.getContentText('UTF-8')).data;
     }
 

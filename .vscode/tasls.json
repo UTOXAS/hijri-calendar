@@ -1,0 +1,18 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Deploy GAS",
+            "type": "shell",
+            "command": "powershell -ExecutionPolicy Bypass -File ${workspaceFolder}\\deploy-gas.ps1",
+            "problemMatcher": [],
+            "runOptions": {
+                "runOn": "folderOpen"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
