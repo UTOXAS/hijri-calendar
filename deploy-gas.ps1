@@ -7,6 +7,30 @@ param (
 $scriptId = "1TLu97O0mD8Sr8q7T0RBvt-_GchO8feMQGHunQE42NS923aQPNkH9tTNt"
 $baseUrl = "https://script.google.com/macros/s"
 
+function Get-DeploymentId {
+    $deploymentsOutput = clasp deployments | Out-String
+    if ($deploymentsOutput -match "- ([\w-]+) @\d+ - Web app") {
+        $deploymentId = $matches[1]
+        Write-Host "Found web app deployment ID: $deploymentId"
+        return $deploymentId
+    } else {
+        Write-Error "No web app deployment found. Please deploy manually first."
+        exit 1
+    }
+}
+
+function Get-WebAppUrl {
+    $deploymentsOutput = clasp deployments | Out-String
+    if ($deploymentsOutput -match "https://script\.google\.com/macros/s/[\w-]+/exec") {
+        $url = $matches[0]
+        Write-Host "Found web app URL: $url"
+        return $url
+    } else {
+        Write-Error "No web app URL found in deployments."
+        exit 1
+    }
+}
+
 function Deploy-GasProject {
     Write-Host "Pushing changes to Google Apps Script..."
     clasp push
@@ -21,24 +45,18 @@ function Deploy-GasProject {
         exit 1
     }
 
-    Write-Host "Deploying new version as web app..."
-    $deployOutput = clasp deploy -V $version | Out-String
-    if ($deployOutput -match "https://script\.google\.com/macros/s/[\w-]+/exec") {
-        $newUrl = $matches[0]
-        Write-Host "New deployment URL: $newUrl"
-        return $newUrl
+    $deploymentId = Get-DeploymentId
+    Write-Host "Redeploying web app with version $version..."
+    $redeployOutput = clasp redeploy $deploymentId $version "Updated deployment" | Out-String
+    if ($redeployOutput -match "Deployed") {
+        Write-Host "Successfully redeployed web app."
     } else {
-        Write-Host "Falling back to deployments list..."
-        $deploymentsOutput = clasp deployments | Out-String
-        if ($deploymentsOutput -match "https://script\.google\.com/macros/s/[\w-]+/exec") {
-            $newUrl = $matches[0]
-            Write-Host "Extracted URL from deployments: $newUrl"
-            return $newUrl
-        } else {
-            Write-Error "Failed to extract deployment URL from deployments."
-            exit 1
-        }
+        Write-Error "Failed to redeploy web app."
+        exit 1
     }
+
+    $newUrl = Get-WebAppUrl
+    return $newUrl
 }
 
 function Update-ApiFile {
@@ -52,7 +70,7 @@ function Update-ApiFile {
     if ($content -match $oldUrlPattern) {
         $updatedContent = $content -replace $oldUrlPattern, $newUrlLine
         Set-Content -Path $file -Value $updatedContent -Encoding UTF8
-        Write-Host "Updated $file with new URL: $newUrl"
+        Write-Host "Updated $file with URL: $newUrl"
     } else {
         Write-Error "Could not find proxyUrl in $file."
         exit 1
