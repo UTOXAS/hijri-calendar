@@ -1,13 +1,12 @@
-// Generate calendar for a given month and year
-function generateCalendar(hijriData, gregorianDate) {
+function generateCalendar(hijriData) {
     const tbody = document.getElementById('calendar-body');
     tbody.innerHTML = '';
 
-    const hijriMonth = hijriData.HijriMonthName;
-    const hijriYear = hijriData.HijriYear;
-    const gregorianStart = new Date(hijriData.GregorianStart);
+    const hijriMonth = hijriData.hijriMonthName;
+    const hijriYear = hijriData.hijriYear;
+    const gregorianStart = new Date(hijriData.gregorianStart);
     const gregorianEnd = new Date(gregorianStart);
-    gregorianEnd.setDate(gregorianStart.getDate() + hijriData.DaysInMonth - 1);
+    gregorianEnd.setDate(gregorianStart.getDate() + hijriData.daysInMonth - 1);
 
     const gregorianStartMonth = gregorianStart.toLocaleString('ar', { month: 'long' });
     const gregorianEndMonth = gregorianEnd.toLocaleString('ar', { month: 'long' });
@@ -18,8 +17,8 @@ function generateCalendar(hijriData, gregorianDate) {
 
     document.getElementById('month-year').textContent = `${hijriMonth} ${hijriYear} هـ - ${gregorianHeader}`;
 
-    const daysInMonth = hijriData.DaysInMonth;
-    const firstDayWeekday = (gregorianStart.getDay() + 1) % 7; // 0 = السبت, 1 = الأحد, ..., 6 = الجمعة
+    const daysInMonth = hijriData.daysInMonth;
+    const firstDayWeekday = gregorianStart.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
 
     let dayCounter = 1;
     const weeks = Math.ceil((daysInMonth + firstDayWeekday) / 7);
@@ -57,40 +56,7 @@ function generateCalendar(hijriData, gregorianDate) {
     return calendarData;
 }
 
-// Navigate to previous Hijri month
-function prevMonth(hijriMonth, hijriYear) {
-    const hijriMonths = [
-        'مُحَرَّم', 'صَفَر', 'رَبيع الأوَّل', 'رَبيع الثاني', 'جُمادى الأولى', 'جُمادى الآخرة',
-        'رَجَب', 'شَعْبان', 'رَمَضان', 'شَوّال', 'ذو القَعدة', 'ذو الحِجَّة'
-    ];
-    let monthIndex = hijriMonths.indexOf(hijriMonth);
-    let year = parseInt(hijriYear);
-    monthIndex--;
-    if (monthIndex < 0) {
-        monthIndex = 11;
-        year--;
-    }
-    return { month: hijriMonths[monthIndex], year: year.toString() };
-}
-
-// Navigate to next Hijri month
-function nextMonth(hijriMonth, hijriYear) {
-    const hijriMonths = [
-        'مُحَرَّم', 'صَفَر', 'رَبيع الأوَّل', 'رَبيع الثاني', 'جُمادى الأولى', 'جُمادى الآخرة',
-        'رَجَب', 'شَعْبان', 'رَمَضان', 'شَوّال', 'ذو القَعدة', 'ذو الحِجَّة'
-    ];
-    let monthIndex = hijriMonths.indexOf(hijriMonth);
-    let year = parseInt(hijriYear);
-    monthIndex++;
-    if (monthIndex > 11) {
-        monthIndex = 0;
-        year++;
-    }
-    return { month: hijriMonths[monthIndex], year: year.toString() };
-}
-
-// Generate CSV format
-function generateCSV(calendarData, hijriData, gregorianDate) {
+function generateCSV(calendarData) {
     const headers = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
     let csv = headers.map(h => `"${h}"`).join(',') + '\n';
     calendarData.forEach(row => {
@@ -99,14 +65,13 @@ function generateCSV(calendarData, hijriData, gregorianDate) {
     return csv;
 }
 
-// Generate formatted text
-function generateFormattedText(calendarData, hijriData, gregorianDate) {
+function generateFormattedText(calendarData, hijriData) {
     const headers = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
-    const hijriMonth = hijriData.HijriMonthName;
-    const hijriYear = hijriData.HijriYear;
-    const gregorianStart = new Date(hijriData.GregorianStart);
+    const hijriMonth = hijriData.hijriMonthName;
+    const hijriYear = hijriData.hijriYear;
+    const gregorianStart = new Date(hijriData.gregorianStart);
     const gregorianEnd = new Date(gregorianStart);
-    gregorianEnd.setDate(gregorianStart.getDate() + hijriData.DaysInMonth - 1);
+    gregorianEnd.setDate(gregorianStart.getDate() + hijriData.daysInMonth - 1);
     const gregorianStartMonth = gregorianStart.toLocaleString('ar', { month: 'long' });
     const gregorianEndMonth = gregorianEnd.toLocaleString('ar', { month: 'long' });
     const gregorianYear = gregorianStart.getFullYear();
@@ -115,10 +80,11 @@ function generateFormattedText(calendarData, hijriData, gregorianDate) {
         : `${gregorianStartMonth} - ${gregorianEndMonth} ${gregorianYear} م`;
 
     let text = `${hijriMonth} ${hijriYear} هـ\n${gregorianHeader}\n\n`;
-    text += headers.join('     | ') + '\n';
-    text += headers.map(() => '----------').join('|') + '\n';
+    const columnWidth = 13;
+    text += headers.map(h => h.padStart(columnWidth)).join('|') + '\n';
+    text += headers.map(() => '-'.repeat(columnWidth)).join('|') + '\n';
     calendarData.forEach(row => {
-        text += row.map(cell => cell.padEnd(11)).join('| ') + '\n';
+        text += row.map(cell => cell.padEnd(columnWidth)).join('|') + '\n';
     });
     return text.trim();
 }

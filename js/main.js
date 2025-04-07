@@ -1,32 +1,14 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const loading = document.getElementById('loading');
     const errorAlert = document.getElementById('error-alert');
-    let currentHijriMonth;
-    let currentHijriYear;
     let currentCalendarData = [];
-
-    // Initialize with current Hijri month and year
-    async function initializeCurrentMonth() {
-        try {
-            const currentData = await fetchHijriDateToday();
-            currentHijriMonth = currentData.hijriMonthName;
-            currentHijriYear = currentData.hijriYear;
-        } catch (error) {
-            console.error('فشل في تهيئة الشهر الحالي:', error);
-            // Use a fallback date if API fails
-            currentHijriMonth = 'شَوّال';
-            currentHijriYear = '1446';
-            errorAlert.textContent = 'تعذر جلب التاريخ الحالي من دار الإفتاء. يتم استخدام تاريخ افتراضي.';
-            errorAlert.classList.remove('d-none');
-        }
-    }
 
     async function loadCalendar() {
         loading.style.display = 'block';
         errorAlert.classList.add('d-none');
         try {
-            const hijriData = await fetchHijriDate(currentHijriMonth, currentHijriYear);
-            currentCalendarData = generateCalendar(hijriData, hijriData.GregorianStart);
+            const hijriData = await fetchHijriDateToday();
+            currentCalendarData = generateCalendar(hijriData);
         } catch (error) {
             console.error('فشل في تحميل التقويم:', error);
             errorAlert.textContent = 'حدث خطأ أثناء تحميل التقويم. تحقق من اتصالك بالإنترنت وحاول مرة أخرى.';
@@ -36,27 +18,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    await initializeCurrentMonth();
     await loadCalendar();
-
-    document.getElementById('prev-month').addEventListener('click', async () => {
-        const { month, year } = prevMonth(currentHijriMonth, currentHijriYear);
-        currentHijriMonth = month;
-        currentHijriYear = year;
-        await loadCalendar();
-    });
-
-    document.getElementById('next-month').addEventListener('click', async () => {
-        const { month, year } = nextMonth(currentHijriMonth, currentHijriYear);
-        currentHijriMonth = month;
-        currentHijriYear = year;
-        await loadCalendar();
-    });
 
     document.getElementById('copy-csv').addEventListener('click', async () => {
         try {
-            const hijriData = await fetchHijriDate(currentHijriMonth, currentHijriYear);
-            const csv = generateCSV(currentCalendarData, hijriData, hijriData.GregorianStart);
+            const hijriData = await fetchHijriDateToday();
+            const csv = generateCSV(currentCalendarData);
             await navigator.clipboard.writeText(csv);
             alert('تم نسخ التقويم كـ CSV');
         } catch (err) {
@@ -66,8 +33,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('copy-text').addEventListener('click', async () => {
         try {
-            const hijriData = await fetchHijriDate(currentHijriMonth, currentHijriYear);
-            const text = generateFormattedText(currentCalendarData, hijriData, hijriData.GregorianStart);
+            const hijriData = await fetchHijriDateToday();
+            const text = generateFormattedText(currentCalendarData, hijriData);
             await navigator.clipboard.writeText(text);
             alert('تم نسخ التقويم كـ نص');
         } catch (err) {
