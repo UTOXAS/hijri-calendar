@@ -26,14 +26,14 @@ function doGet(e) {
     }
 
     // Map Hijri month to numeric index (1-12)
-    const monthMap = {
-      'مُحَرَّم': 1, 'صَفَر': 2, 'رَبيع الأوَّل': 3, 'رَبيع الثاني': 4,
+  const monthMap = {
+      'مُحَرَّم': 1, 'صَفَر': 2, 'رَبيع الأوَّل': 3, 'رَبيع الثاني': 4,
       'جُمادى الأولى': 5, 'جُمادى الآخرة': 6, 'رَجَب': 7, 'شَعْبان': 8,
-      'رَمَضان': 9, 'شَوّال': 10, 'ذو القَعدة': 11, 'ذو الحِجَّة': 12,
-      'Muharram': 1, 'Safar': 2, 'RabiealAwwal': 3, 'RabiealThani': 4,
-      'JumadaalAwwal': 5, 'JumadaalThani': 6, 'Rajab': 7, 'Saban': 8,
-      'Ramadan': 9, 'Shawwal': 10, 'DhulQida': 11, 'DhulHijja': 12
-    };
+      'رَمَضان': 9, 'شَوّال': 10, 'ذو القَعدة': 11, 'ذو الحِجَّة': 12,
+      'Muharram': 1, 'Safar': 2, 'Rabie’ al-Awwal': 3, 'Rabie’ al-Thani': 4,
+      'Jumada al-Awwal': 5, 'Jumada al-Thani': 6, 'Rajab': 7, 'Sa’ban': 8,
+      'Ramadan': 9, 'Shawwal': 10, 'Dhul-Qi’da': 11, 'Dhul-Hijja': 12
+  };
     const monthIndex = monthMap[hijriMonth];
     if (!monthIndex) throw new Error('Unknown Hijri month: ' + hijriMonth);
 
