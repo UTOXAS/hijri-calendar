@@ -19,12 +19,8 @@ body {
     background: #fff;
     border: 4px solid #000;
     box-shadow: 8px 8px 0 #000;
+    -webkit-box-shadow: 8px 8px 0 #000; /* For Android compatibility */
     padding: 20px;
-}
-
-.table-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on touch devices */
 }
 
 h1 {
@@ -37,13 +33,17 @@ h1 {
     background: #ecf0f1;
     border: 3px solid #000;
     box-shadow: 4px 4px 0 #000;
+    -webkit-box-shadow: 4px 4px 0 #000; /* For Android */
     font-size: 1rem;
-    transition: transform 0.1s;
+    transition: transform 0.1s, box-shadow 0.1s;
+    -webkit-transition: -webkit-transform 0.1s, -webkit-box-shadow 0.1s; /* For Android */
 }
 
 .btn-neo:hover {
     transform: translate(2px, 2px);
+    -webkit-transform: translate(2px, 2px); /* For Android */
     box-shadow: 2px 2px 0 #000;
+    -webkit-box-shadow: 2px 2px 0 #000; /* For Android */
 }
 
 .loading {
@@ -56,6 +56,7 @@ h1 {
     width: 100%;
     border-collapse: collapse;
     background: #fff;
+    font-size: 1.1rem; /* Slightly larger base size for readability */
 }
 
 .calendar-table th,
@@ -63,23 +64,27 @@ h1 {
     padding: 15px;
     text-align: center;
     border: 2px solid #000;
-    min-width: 0; /* Prevent fixed-width issues */
-    white-space: nowrap; /* Prevent text wrapping */
+    width: 14.28%; /* Equal width for 7 columns */
+}
+
+.calendar-table th {
+    background-color: #f8f9fa; /* Bootstrap-like light gray */
 }
 
 .calendar-table td {
     background: #fff;
-    font-size: 1rem;
+    transition: background-color 0.2s; /* Smooth hover effect */
+    -webkit-transition: background-color 0.2s; /* For Android */
 }
 
 .calendar-table td:hover {
-    background: #dfe6e9;
+    background: #dfe6e9 !important; /* Override Bootstrap if needed */
     cursor: pointer;
 }
 
 .current-day {
-    background: #3498db;
-    color: #fff;
+    background: #3498db !important; /* Ensure it applies */
+    color: #fff !important;
     font-weight: bold;
 }
 
@@ -97,20 +102,44 @@ footer .credits a:hover {
     text-decoration: underline;
 }
 
-@media (max-width: 600px) {
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .calendar-table {
+        font-size: 1rem; /* Slightly smaller but still readable */
+    }
+
     .calendar-table th,
     .calendar-table td {
-        padding: 8px;
-        font-size: 0.85rem;
+        padding: 10px;
     }
 
     h1 {
-        font-size: 1.5rem;
+        font-size: 1.6rem;
     }
 
     .btn-neo {
         padding: 8px 16px;
         font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .calendar-table {
+        font-size: 0.9rem; /* Minimum readable size for medium screens */
+    }
+
+    .calendar-table th,
+    .calendar-table td {
+        padding: 8px;
+    }
+
+    h1 {
+        font-size: 1.4rem;
+    }
+
+    .btn-neo {
+        padding: 6px 12px;
+        font-size: 0.85rem;
     }
 
     footer {
@@ -119,18 +148,12 @@ footer .credits a:hover {
 }
 
 @media (max-width: 400px) {
+    .calendar-table {
+        font-size: 0.85rem; /* Minimum readable size (~13px on most devices) */
+    }
+
     .calendar-table th,
     .calendar-table td {
-        padding: 5px; /* Further reduced for compactness */
-        font-size: 0.75rem; /* Smaller text for very small screens */
-    }
-
-    h1 {
-        font-size: 1.3rem;
-    }
-
-    .btn-neo {
-        padding: 6px 12px;
-        font-size: 0.85rem;
+        padding: 6px;
     }
 }

@@ -13,9 +13,9 @@ function generateCalendar(hijriData) {
     const gregorianYear = gregorianStart.getFullYear();
     const gregorianHeader = gregorianStartMonth === gregorianEndMonth
         ? `${gregorianStartMonth} ${gregorianYear} م`
-        : `${gregorianStartMonth} / ${gregorianEndMonth} ${gregorianYear} م`;
+        : `${gregorianStartMonth} - ${gregorianEndMonth} ${gregorianYear} م`;
 
-    document.getElementById('month-year').textContent = `${hijriMonth} ${hijriYear} هـ - ${gregorianHeader}`;
+    document.getElementById('month-year').textContent = `${hijriMonth} ${hijriYear} هـ / ${gregorianHeader}`;
 
     const firstDayWeekday = (gregorianStart.getDay() + 1) % 7; // Adjust: Sunday = 0 -> 1, Saturday = 6 -> 0
     const daysInMonth = calendar.length;
@@ -77,9 +77,9 @@ function generateFormattedText(calendarData, hijriData) {
     const gregorianYear = gregorianStart.getFullYear();
     const gregorianHeader = gregorianStartMonth === gregorianEndMonth
         ? `${gregorianStartMonth} ${gregorianYear} م`
-        : `${gregorianStartMonth} / ${gregorianEndMonth} ${gregorianYear} م`;
+        : `${gregorianStartMonth} - ${gregorianEndMonth} ${gregorianYear} م`;
 
-    let text = `${hijriMonth} ${hijriYear} هـ - ${gregorianHeader}\n\n`;
+    let text = `${hijriMonth} ${hijriYear} هـ / ${gregorianHeader}\n\n`;
     const columnWidth = 13;
     text += headers.map(h => h.padStart(columnWidth)).join('|') + '\n';
     text += headers.map(() => '-'.repeat(columnWidth)).join('|') + '\n';
