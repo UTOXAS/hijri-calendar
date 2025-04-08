@@ -61,7 +61,7 @@ h1 {
 
 .calendar-table th,
 .calendar-table td {
-    padding: 15px;
+    padding: 10px; /* Adjusted for multi-line content */
     text-align: center;
     border: 2px solid #000;
     width: 14.28%; /* Equal width for 7 columns */
@@ -82,10 +82,25 @@ h1 {
     cursor: pointer;
 }
 
+.calendar-table .hijri-date {
+    font-weight: 500; /* Slightly bold for emphasis */
+    color: #333; /* Full color */
+}
+
+.calendar-table .gregorian-date {
+    font-size: 0.9rem; /* Slightly smaller */
+    color: #7f8c8d; /* Muted color for unemphasis */
+    margin-top: 2px; /* Spacing between lines */
+}
+
 .current-day {
     background: #3498db !important; /* Ensure it applies */
     color: #fff !important;
-    font-weight: bold;
+}
+
+.current-day .hijri-date,
+.current-day .gregorian-date {
+    color: #fff !important; /* Ensure white text in current day */
 }
 
 footer {
@@ -106,8 +121,12 @@ footer .credits a:hover {
 @media (max-width: 768px) {
     .calendar-table th,
     .calendar-table td {
-        padding: 10px;
+        padding: 8px;
         font-size: 0.9rem;
+    }
+
+    .calendar-table .gregorian-date {
+        font-size: 0.8rem;
     }
 
     h1 {
@@ -125,6 +144,10 @@ footer .credits a:hover {
     .calendar-table td {
         padding: 6px;
         font-size: 0.75rem; /* Smaller but readable */
+    }
+
+    .calendar-table .gregorian-date {
+        font-size: 0.65rem;
     }
 
     h1 {
@@ -146,5 +169,9 @@ footer .credits a:hover {
     .calendar-table td {
         padding: 4px;
         font-size: 0.65rem; /* Minimum readable size */
+    }
+
+    .calendar-table .gregorian-date {
+        font-size: 0.55rem;
     }
 }

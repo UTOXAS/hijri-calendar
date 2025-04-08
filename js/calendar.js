@@ -38,14 +38,19 @@ function generateCalendar(hijriData) {
                 const lastDayOfMonth = new Date(gregYear, day.gregorian.date.getMonth() + 1, 0).getDate();
                 const isLastOfGregMonth = gregDay === String(lastDayOfMonth);
                 const gregText = `${gregDay}${(isFirstOfGregMonth || isLastOfGregMonth) ? ` ${gregMonth}` : ''}`;
-                cell.textContent = `${day.hijri.day} (${gregText})`;
+
+                // Split Hijri and Gregorian into separate lines
+                cell.innerHTML = `
+                    <div class="hijri-date">${day.hijri.day}</div>
+                    <div class="gregorian-date">${gregText}</div>
+                `;
                 cell.title = `${formatHijriDate(day.hijri.day, hijriMonth, hijriYear)} - ${formatGregorianDate(gregDay, gregMonth, gregYear)}`;
 
                 const today = new Date();
                 if (day.gregorian.date.toDateString() === today.toDateString()) {
                     cell.classList.add('current-day');
                 }
-                rowData[j] = cell.textContent;
+                rowData[j] = `${day.hijri.day} (${gregText})`; // Keep combined format for CSV/text
                 dayCounter++;
             }
             row.appendChild(cell);
