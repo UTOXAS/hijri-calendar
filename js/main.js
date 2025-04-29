@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentCalendarData = generateCalendar(hijriData);
         } catch (error) {
             console.error('فشل في تحميل التقويم:', error);
-            errorAlert.textContent = 'حدث خطأ أثناء تحميل التقويم. تحقق من اتصالك بالإنترنت وحاول مرة أخرى.';
+            errorAlert.textContent = 'تعذر تحميل التقويم بسبب مشكلة في البيانات. الرجاء المحاولة مرة أخرى لاحقًا أو التواصل مع الدعم إذا استمرت المشكلة.';
             errorAlert.classList.remove('d-none');
         } finally {
             loading.style.display = 'none';
